@@ -43,7 +43,7 @@ class RetrievalConfig:
 @dataclass
 class ProjectConfig:
     project_id: str
-    model_provider: str  # "ollama" | "anthropic" | "demo"
+    model_provider: str  # "ollama" | "anthropic" | "openai" | "demo"
     model_name: str
     embedding_model: str = "bge-m3"
     prompt: PromptConfig = field(default_factory=PromptConfig)

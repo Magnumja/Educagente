@@ -2,10 +2,7 @@
 
     run(config, index, question, use_prompt, use_rag, api_key=None) -> EngineResult
 
-`api_key` foi adicionada de forma aditiva (default None) para suportar BYOK: o
-aluno cola a própria chave Anthropic/OpenAI no navegador e ela viaja por
-requisição via header, nunca fica guardada no servidor. Sem `api_key`, cai no
-fallback do `.env` do servidor (modo demonstração/turma), como antes.
+`api_key` é a chave do aluno (BYOK), usada só nesta chamada; sem ela vale a do `.env`.
 """
 from __future__ import annotations
 
