@@ -221,7 +221,9 @@ async def enviar_documento_projeto(aluno_id: int, projeto_id: int, arquivo: Uplo
 
     pasta = pasta_uploads(projeto_id)
     pasta.mkdir(parents=True, exist_ok=True)
-    caminho = pasta / (arquivo.filename or f"documento{sufixo}")
+    # Só o nome final do arquivo: o filename vem do cliente e pode trazer "../" ou caminho absoluto.
+    nome_seguro = Path(arquivo.filename or "").name or f"documento{sufixo}"
+    caminho = pasta / nome_seguro
     caminho.write_bytes(await arquivo.read())
 
     paginas = extrair_paginas(caminho)

@@ -82,8 +82,10 @@ class Pergunta(BaseModel):
 
 @app.get("/api/saude")
 def saude():
+    # Mesma regra de build_adapter: provedor com chave e sem chave no .env cai no DemoAdapter.
+    chave_do_provedor = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}.get(MODEL_PROVIDER)
     modo_demonstracao = MODEL_PROVIDER == "demo" or (
-        MODEL_PROVIDER == "anthropic" and not os.getenv("ANTHROPIC_API_KEY")
+        chave_do_provedor is not None and not os.getenv(chave_do_provedor)
     )
     return {
         "ok": True,
