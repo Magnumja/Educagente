@@ -15,6 +15,9 @@ class PaginaExtraida:
     texto: str
 
 
+FORMATOS_ACEITOS = (".pdf", ".txt")
+
+
 def extrair_paginas(caminho: Path) -> list[PaginaExtraida]:
     sufixo = caminho.suffix.lower()
     if sufixo == ".pdf":

@@ -1,0 +1,12 @@
+1. Baixar os modelos do Ollama (uma vez só, se ainda não tiver):
+ollama pull bge-m3        # embedding, sempre necessário
+ollama pull llama3.2:1b   # só se for usar MODEL_PROVIDER=ollama no chat
+2. Configurar backend/.env (copiar de backend/.env.example na primeira vez) e escolher o provedor padrão (MODEL_PROVIDER=ollama, anthropic, ou openai + a chave correspondente).
+3. Subir o backend + garantir o Ollama acessível:
+./docker-up.sh
+   (isso já chama ollama.sh por dentro, então não precisa rodar ele separado)
+4. Conferir que a API está de pé:
+curl http://localhost:8000/api/saude
+5. Subir o frontend (em outro terminal, fora do Docker):
+cd frontend && npm install && npm run dev
+6. Abrir http://localhost:5173.

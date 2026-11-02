@@ -1,5 +1,5 @@
-"""Adaptador plugável de modelo de chat: Ollama ou Anthropic atrás da mesma interface,
-mais um modo de demonstração (sem chave/sem Ollama local) que nunca derruba o fluxo.
+"""Adaptadores de chat (Ollama, Anthropic, OpenAI) atrás da mesma interface, mais o modo
+demonstração usado quando o servidor não tem provedor configurado.
 """
 from __future__ import annotations
 
@@ -91,11 +91,11 @@ class OpenAIAdapter(ChatAdapter):
 
 
 class DemoAdapter(ChatAdapter):
-    """Permite testar o fluxo inteiro sem chave Anthropic e sem Ollama local."""
+    """Responde com os trechos encontrados, sem chamar nenhum modelo."""
 
     def chat(self, system: str, question: str) -> ChatResult:
         inicio = time.monotonic()
-        aviso = "[modo demonstração: configure ANTHROPIC_API_KEY ou rode o Ollama local]\n"
+        aviso = "[modo demonstração: configure MODEL_PROVIDER e a chave correspondente no backend/.env]\n"
         marcador = "Trechos da base de conhecimento:\n"
         if marcador in system:
             resposta = aviso + "Encontrei estes dados:\n" + system.split(marcador, 1)[1][:600]
@@ -104,19 +104,22 @@ class DemoAdapter(ChatAdapter):
         return ChatResult(answer=resposta, tokens_in=0, tokens_out=0, time_seconds=time.monotonic() - inicio)
 
 
+VARIAVEL_DA_CHAVE = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}
+
+
+def provedor_sem_chave(provider: str, api_key: str | None = None) -> bool:
+    """True se o provedor exige chave e não há nem a do aluno nem a do `.env`."""
+    variavel = VARIAVEL_DA_CHAVE.get(provider)
+    return variavel is not None and not (api_key or os.getenv(variavel))
+
+
 def build_adapter(provider: str, model: str, api_key: str | None = None) -> ChatAdapter:
-    if provider == "demo":
+    if provider == "demo" or provedor_sem_chave(provider, api_key):
         return DemoAdapter()
     if provider == "ollama":
         return OllamaAdapter(model)
     if provider == "anthropic":
-        chave = api_key or os.getenv("ANTHROPIC_API_KEY")
-        if not chave:
-            return DemoAdapter()
-        return AnthropicAdapter(model, chave)
+        return AnthropicAdapter(model, api_key or os.getenv("ANTHROPIC_API_KEY"))
     if provider == "openai":
-        chave = api_key or os.getenv("OPENAI_API_KEY")
-        if not chave:
-            return DemoAdapter()
-        return OpenAIAdapter(model, chave)
+        return OpenAIAdapter(model, api_key or os.getenv("OPENAI_API_KEY"))
     raise ValueError(f"Provedor de modelo desconhecido: {provider}")
