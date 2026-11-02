@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: { alias: { '@': path.resolve(import.meta.dirname, './src') } },
   server: {
     host: true, // libera acesso pelos outros computadores do laboratório
-    proxy: { '/api': 'http://localhost:8000' },
+    // changeOrigin: o Django recebe Host localhost:8000 mesmo quando o aluno acessa pelo IP do professor.
+    proxy: { '/api': { target: 'http://localhost:8000', changeOrigin: true } },
   },
 })
