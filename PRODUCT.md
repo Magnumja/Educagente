@@ -9,7 +9,7 @@ web
 ## Stack
 
 React 19 + Vite 8 + Tailwind 4 (+ `motion`, `lucide-react`, `next-themes`), já existente no
-repositório (`frontend/`). Backend FastAPI (`backend/main.py`), SQLite para respostas.
+repositório (`frontend/`). Backend Django + Django Ninja (`backend/`), SQLite via ORM.
 Decisão de evolução confirmada com o usuário: adaptador de modelo plugável (Ollama **e**
 Anthropic), índice vetorial próprio (JSONL + cosine manual, substituindo o Chroma atual) e
 ingestão de conhecimento por upload de PDF/TXT (substituindo o mecanismo atual de colar JSON).

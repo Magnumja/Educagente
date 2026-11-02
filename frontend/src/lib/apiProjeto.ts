@@ -1,5 +1,5 @@
 /**
- * Cliente do modelo "Projeto" — espelha 1:1 os endpoints de `backend/projetos.py`
+ * Cliente do modelo "Projeto" — espelha 1:1 os endpoints de `backend/projetos/api.py`
  * (prefixo `/api/alunos/{aluno_id}/projetos`). Reaproveita o aluno anônimo já
  * criado por `lib/api.ts` (mesma chave de localStorage).
  *
