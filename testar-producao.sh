@@ -12,6 +12,8 @@ BASE="${1:?Informe o endereço, ex.: ./testar-producao.sh https://oficina.exempl
 BASE="${BASE%/}"
 API="$BASE/api"
 PY=python3; command -v python3 >/dev/null || PY=python
+export PYTHONIOENCODING=utf-8
+# Corpos JSON só com ASCII (acentos como ã): o Git Bash do Windows estraga UTF-8 em argumentos.
 TMP=$(mktemp -d)
 OFICINA=""
 AUTH=""
@@ -61,11 +63,11 @@ ok "login funciona e o painel exige senha"
 
 passo "3. Oficina temporária com fonte sugerida (testa os embeddings)"
 OFICINA=$(chamar -X POST "$API/facilitador/oficinas" -H "$AUTH" -H 'Content-Type: application/json' -d '{
-  "titulo": "Teste de fumaça (apagar)",
+  "titulo": "Teste de fuma\u00e7a (apagar)",
   "perguntas": [
-    {"texto": "Napoleão Bonaparte chegou a visitar o Brasil?", "referencia": ""},
-    {"texto": "Por que a família real portuguesa veio para o Brasil em 1808?", "referencia": ""},
-    {"texto": "Napoleão Bonaparte era muito baixo para a época dele?", "referencia": ""}
+    {"texto": "Napole\u00e3o Bonaparte chegou a visitar o Brasil?", "referencia": ""},
+    {"texto": "Por que a fam\u00edlia real portuguesa veio para o Brasil em 1808?", "referencia": ""},
+    {"texto": "Napole\u00e3o Bonaparte era muito baixo para a \u00e9poca dele?", "referencia": ""}
   ]}' | campo "d['id']")
 CODIGO=$(chamar -H "$AUTH" "$API/facilitador/oficinas/$OFICINA" | campo "d['codigo']")
 chamar -X POST -H "$AUTH" -F "arquivo=@backend/oficinas/exemplos/napoleao.txt" "$API/facilitador/oficinas/$OFICINA/fontes" \
@@ -90,6 +92,6 @@ chamar -X POST "$API/eu/perguntar" -H "$PART" -H 'Content-Type: application/json
 
 passo "7. Exportação"
 chamar -H "$AUTH" "$API/facilitador/oficinas/$OFICINA/export.csv" > "$TMP/export.csv"
-ok "CSV com $(($(wc -l < "$TMP/export.csv") - 1)) linhas"
+ok "CSV exportado ($(wc -c < "$TMP/export.csv") bytes)"
 
 printf '\n\033[1;32mTudo certo.\033[0m\n'
