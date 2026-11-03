@@ -101,6 +101,18 @@ frontend/src/
 
 ## Como subir
 
+### Linux em um comando
+
+```bash
+git clone https://github.com/Magnumja/rag-oficina.git && cd rag-oficina
+./instalar-linux.sh                          # rede local: http://IP:8000
+./instalar-linux.sh oficina.seudominio.com   # internet com HTTPS (DNS já apontando)
+```
+
+Gera a chave do Django e a senha do professor na própria máquina, preenche o `backend/.env`,
+instala e configura o Ollama, baixa os modelos, sobe tudo e roda o `testar-producao.sh`. No fim
+mostra o endereço e a senha do professor.
+
 ### Docker (recomendado para o laboratório)
 
 ```bash
