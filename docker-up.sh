@@ -4,18 +4,21 @@
 set -e
 cd "$(dirname "$0")"
 
+PY=python3; command -v python3 >/dev/null || PY=python
 [ -f backend/.env ] || cp backend/.env.example backend/.env
 # Com DJANGO_DEBUG=0 o Django exige uma chave secreta: gera uma só na primeira vez.
 if ! grep -qE '^DJANGO_SECRET_KEY=.+' backend/.env; then
   sed -i '/^DJANGO_SECRET_KEY=$/d' backend/.env
-  echo "DJANGO_SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" >> backend/.env
+  echo "DJANGO_SECRET_KEY=$($PY -c 'import secrets; print(secrets.token_urlsafe(50))')" >> backend/.env
   echo "Gerei uma DJANGO_SECRET_KEY em backend/.env."
 fi
 if ! grep -qE '^FACILITADOR_SENHA=.+' backend/.env; then
   echo "Aviso: FACILITADOR_SENHA está vazia em backend/.env; o painel do facilitador ficará desligado."
 fi
 
-./ollama.sh
+# ollama.sh só vale no Linux. No Windows/macOS (Docker Desktop), defina OLLAMA_HOST=0.0.0.0
+# nas variáveis do sistema e reinicie o Ollama (ver README).
+if [ "$(uname -s)" = Linux ]; then ./ollama.sh; fi
 
 # Na subida o container roda as migrations.
 docker compose up --build -d

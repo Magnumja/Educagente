@@ -92,6 +92,8 @@ NINJA_NUM_PROXIES = 0
 
 # Facilitador: uma senha por instalação. Vazia = painel do facilitador desligado.
 FACILITADOR_SENHA = os.getenv("FACILITADOR_SENHA", "")
+if FACILITADOR_SENHA and len(FACILITADOR_SENHA) < 12:
+    raise ImproperlyConfigured("FACILITADOR_SENHA precisa ter pelo menos 12 caracteres.")
 
 # Modelo de chat definido pela equipe: "anthropic", "ollama" ou "demo".
 MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "ollama")

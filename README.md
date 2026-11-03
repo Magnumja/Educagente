@@ -110,7 +110,14 @@ ollama pull bge-m3 && ollama pull llama3.2:3b
 ```
 
 Tudo fica em `http://localhost:8000`. Os outros computadores acessam pelo IP da máquina do
-facilitador: coloque esse IP (ou `*`) em `DJANGO_ALLOWED_HOSTS`.
+facilitador: coloque esse IP (ou `*`) em `DJANGO_ALLOWED_HOSTS` e libere a porta 8000 no firewall.
+
+No Windows e no macOS (Docker Desktop), o container só alcança o Ollama se ele escutar em todas
+as interfaces: defina a variável de sistema `OLLAMA_HOST=0.0.0.0` (no Windows:
+`setx OLLAMA_HOST 0.0.0.0`) e reinicie o Ollama. No Linux o `docker-up.sh` faz isso sozinho.
+
+A conexão no laboratório é HTTP simples: use só em rede local confiável. Para expor na
+internet, coloque um proxy com HTTPS na frente.
 
 ### Local, sem Docker
 
@@ -123,7 +130,7 @@ MODEL_PROVIDER=demo EMBEDDING_PROVIDER=local ./iniciar.sh  # sem Ollama nem chav
 
 | Variável | Para quê |
 |---|---|
-| `FACILITADOR_SENHA` | Senha do painel. Vazia = painel desligado |
+| `FACILITADOR_SENHA` | Senha do painel (mínimo 12 caracteres). Vazia = painel desligado |
 | `MODEL_PROVIDER` | `ollama`, `anthropic` ou `demo` (escolha da equipe; o participante não escolhe) |
 | `LLM_MODEL` | Ex.: `llama3.2:3b` (Ollama) ou `claude-haiku-5-5` (Anthropic) |
 | `ANTHROPIC_API_KEY` | Só com `MODEL_PROVIDER=anthropic` |
