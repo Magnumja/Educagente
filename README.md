@@ -52,8 +52,10 @@ Entra com a senha definida no servidor e:
 - acompanha as respostas e avaliações da turma (atualiza sozinho) e **exporta CSV** para a pesquisa;
 - tem o **roteiro da apresentação de 10 minutos** e os cuidados antes de começar.
 
-`python manage.py criar_oficina_exemplo` cria uma oficina pronta sobre Napoleão Bonaparte
-(três perguntas, referências e uma fonte com os fatos conferidos) para ensaiar.
+`python manage.py criar_oficina_exemplo` cria uma oficina pronta sobre direitos na internet
+(LGPD e Marco Civil da Internet: três perguntas, referências e uma fonte com os trechos das leis)
+para ensaiar. O tema é de propósito: sem contexto, um modelo pequeno erra prazos e valores
+(diz que a operadora guarda os registros de conexão por 6 meses; a lei diz 1 ano).
 
 ## Telas
 

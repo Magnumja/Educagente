@@ -110,8 +110,8 @@ Exemplo: o participante clica em **"Perguntar com as fontes"** na etapa 3.
    ```json
    {
      "id": 31, "pergunta_id": 7, "tentativa": 2,
-     "texto": "Não. Napoleão nunca esteve no Brasil [1]...",
-     "trechos": [{"documento": "napoleao.txt", "pagina": 1, "similaridade": 0.71, "texto": "Napoleão nunca esteve..."}],
+     "texto": "A operadora precisa guardar os registros de conexão por 1 ano [1]...",
+     "trechos": [{"documento": "direitos-digitais.txt", "pagina": 1, "similaridade": 0.71, "texto": "A operadora de internet guarda os registros de conexão por 1 ano..."}],
      "nada_relevante": false,
      "instrucoes_enviadas": "Você é um assistente de estudo...",
      "tempo_segundos": 12.4,
