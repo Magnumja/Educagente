@@ -1,6 +1,12 @@
+/**
+ * Casca do site: cabeçalho, avisos gerais (servidor fora do ar, modo demonstração) e a troca
+ * de página conforme a rota com # (ver lib/rota.ts). Não guarda estado de participante:
+ * cada página busca o que precisa.
+ */
 import { useEffect, useState } from 'react'
 import { Cabecalho } from '@/components/Cabecalho'
-import { Aviso, botaoCls, larguraCls } from '@/components/ui'
+import { botaoCls, larguraCls } from '@/components/classes'
+import { Aviso } from '@/components/ui'
 import { api, type Saude } from '@/lib/api'
 import { href, useRota } from '@/lib/rota'
 import { cn } from '@/lib/utils'
@@ -15,6 +21,7 @@ export default function App() {
   const [saude, setSaude] = useState<Saude | null>(null)
   const [semServidor, setSemServidor] = useState(false)
 
+  // Pergunta ao servidor se está no ar e se as respostas são simuladas (modo demonstração).
   useEffect(() => {
     api
       .saude()
@@ -44,6 +51,7 @@ export default function App() {
         tabIndex={-1}
         className={cn(larguraCls, 'flex-1 focus:outline-none', pagina === 'oficina' ? 'py-5 sm:py-6' : 'py-8 sm:py-12')}
       >
+        {/* Mudar de página troca o key e a animação .entrar-pagina roda. Dentro da oficina, quem anima é a etapa. */}
         <div key={pagina === 'oficina' ? 'oficina' : partes.join('/')} className="entrar-pagina">
           <Pagina pagina={pagina} resto={resto} />
         </div>
@@ -52,6 +60,7 @@ export default function App() {
   )
 }
 
+/** Escolhe a página pela primeira parte da rota (#/entrar/ABC123 -> Entrar com codigo ABC123). */
 function Pagina({ pagina, resto }: { pagina?: string; resto: string[] }) {
   switch (pagina) {
     case undefined:

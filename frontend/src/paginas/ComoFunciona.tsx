@@ -1,8 +1,14 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+/**
+ * Página #/como-funciona: explica, sem jargão, a diferença entre dar contexto e RAG, o caminho
+ * de uma pergunta e os limites. Tem uma simulação de busca que roda só no navegador.
+ * O texto muda com o ajuste "Explicações" (essencial ou com detalhes técnicos).
+ */
+import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowRight } from 'lucide-react'
-import { Caixa, Campo, entradaCls } from '@/components/ui'
+import { entradaCls } from '@/components/classes'
+import { Caixa, Campo } from '@/components/ui'
 import { usePreferencias } from '@/lib/preferencias'
-import { cn, porcentagem } from '@/lib/utils'
+import { atraso, cn, porcentagem } from '@/lib/utils'
 
 const ETAPAS_RAG = [
   { titulo: 'Cortar em trechos', essencial: 'O texto das fontes é dividido em pedaços de alguns parágrafos.', tecnico: 'Chunks de até ~500 caracteres, respeitando parágrafos, com pequena sobreposição.' },
@@ -19,8 +25,10 @@ const FONTE_EXEMPLO = [
   'Parte da água da chuva infiltra no solo e abastece os lençóis freáticos.',
 ]
 
+/** Palavras muito comuns que não dizem nada sobre o assunto, ignoradas na simulação. */
 const PARADAS = new Set('que qual quais quem como onde quando para por com uma umas uns dos das nos nas pelo pela isso esse essa sao ser tem por que'.split(' '))
 
+/** Palavras de um texto sem acento, sem as PARADAS e cortadas em 5 letras ("nuvens" e "nuvem" batem). */
 function palavras(texto: string) {
   return new Set(
     texto
@@ -75,14 +83,15 @@ export function ComoFunciona() {
           O caminho de uma pergunta com RAG
         </h2>
         <ol className="grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] lg:items-stretch">
+          {/* Cada etapa vem seguida de uma seta; o --i conta as duas para entrarem em sequência. */}
           {ETAPAS_RAG.map((e, i) => [
-            <li key={e.titulo} style={{ '--i': i * 2 } as CSSProperties} className="surgir levanta rounded-caixa border bg-superficie p-5 shadow-caixa">
+            <li key={e.titulo} style={atraso(i * 2)} className="surgir levanta rounded-caixa border bg-superficie p-5 shadow-caixa">
               <p className="font-mono text-sm font-bold text-acao">{i + 1}</p>
               <h3 className="mt-1 font-semibold">{e.titulo}</h3>
               <p className="mt-1 text-[0.95rem] text-tinta-2">{tecnico ? e.tecnico : e.essencial}</p>
             </li>,
             i < ETAPAS_RAG.length - 1 && (
-              <li key={`seta-${i}`} aria-hidden style={{ '--i': i * 2 + 1 } as CSSProperties} className="surgir grid place-items-center text-acao">
+              <li key={`seta-${i}`} aria-hidden style={atraso(i * 2 + 1)} className="surgir grid place-items-center text-acao">
                 <ArrowRight className="hidden size-5 lg:block" />
                 <ArrowDown className="size-5 lg:hidden" />
               </li>
@@ -119,6 +128,10 @@ export function ComoFunciona() {
   )
 }
 
+/**
+ * Simulação da busca do RAG feita no próprio navegador: a nota de cada trecho é a fração das
+ * palavras da pergunta que aparecem nele. Entram os 2 melhores acima do limiar.
+ */
 function Experimente({ tecnico }: { tecnico: boolean }) {
   const [pergunta, setPergunta] = useState('Como as nuvens se formam?')
   const [limiar, setLimiar] = useState(0.2)

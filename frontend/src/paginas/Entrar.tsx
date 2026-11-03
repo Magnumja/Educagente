@@ -1,7 +1,12 @@
+/**
+ * Página #/entrar/CODIGO. Busca a oficina pelo código (GET /oficinas/{codigo}), pede um
+ * apelido e o consentimento e, ao enviar, cria o participante e guarda o token dele.
+ */
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
-import { Aviso, Botao, Caixa, Campo, Carregando, botaoCls, entradaCls } from '@/components/ui'
-import { api, type OficinaResumo } from '@/lib/api'
+import { botaoCls, entradaCls } from '@/components/classes'
+import { Aviso, Botao, Caixa, Campo, Carregando } from '@/components/ui'
+import { api, textoDoErro, type OficinaResumo } from '@/lib/api'
 import { href, navegar } from '@/lib/rota'
 
 export function Entrar({ codigo }: { codigo: string }) {
@@ -11,15 +16,17 @@ export function Entrar({ codigo }: { codigo: string }) {
   const [aceito, setAceito] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
+  // Os avisos de campo vazio só aparecem depois da primeira tentativa de enviar.
   const [tentou, setTentou] = useState(false)
 
   useEffect(() => {
     api
       .oficina(codigo)
       .then(setOficina)
-      .catch((e: Error) => setErroOficina(e.message))
+      .catch((e: unknown) => setErroOficina(textoDoErro(e)))
   }, [codigo])
 
+  /** POST /oficinas/{codigo}/entrar: o api.entrar já guarda o token; depois vai para a etapa 1. */
   async function enviar(e: FormEvent) {
     e.preventDefault()
     setTentou(true)
@@ -30,7 +37,7 @@ export function Entrar({ codigo }: { codigo: string }) {
       await api.entrar(codigo, apelido.trim())
       navegar('/oficina/1')
     } catch (err) {
-      setErro((err as Error).message)
+      setErro(textoDoErro(err))
     } finally {
       setEnviando(false)
     }

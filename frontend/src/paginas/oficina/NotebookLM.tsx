@@ -1,10 +1,14 @@
+/**
+ * Etapa 5: leva o raciocínio da oficina para o estudo com o NotebookLM (checklist de passos,
+ * exemplo e cuidados) e, no fim, oferece ao participante apagar todos os seus dados.
+ */
 import { useState } from 'react'
 import { ExternalLink, Trash2 } from 'lucide-react'
 import { Aviso, Botao, Caixa } from '@/components/ui'
-import { api } from '@/lib/api'
+import { CabecalhoEtapa, type PropsEtapa } from '@/components/Etapa'
+import { api, textoDoErro } from '@/lib/api'
 import { usePreferencias } from '@/lib/preferencias'
 import { navegar } from '@/lib/rota'
-import { CabecalhoEtapa, type PropsEtapa } from '../Oficina'
 
 const PASSOS = [
   {
@@ -35,11 +39,13 @@ const PASSOS = [
   },
 ]
 
+/** Os passos marcados ficam só neste navegador: é um lembrete pessoal, não vai para o servidor. */
 const CHAVE = 'educagente:notebooklm'
 
 function lerFeitos(): number[] {
   try {
-    return JSON.parse(localStorage.getItem(CHAVE) ?? '[]')
+    const salvo: unknown = JSON.parse(localStorage.getItem(CHAVE) ?? '[]')
+    return Array.isArray(salvo) ? salvo.filter((i): i is number => typeof i === 'number') : []
   } catch {
     return []
   }
@@ -58,17 +64,18 @@ export function NotebookLM({ estado }: PropsEtapa) {
     try {
       localStorage.setItem(CHAVE, JSON.stringify(novo))
     } catch {
-      /* ignora */
+      /* sem armazenamento: as marcações valem só nesta visita */
     }
   }
 
+  /** DELETE /eu: apaga tudo do participante no servidor, esquece o token e volta ao início. */
   async function apagar() {
     setApagando(true)
     try {
       await api.apagarMeusDados()
       navegar('/')
     } catch (e) {
-      setErro((e as Error).message)
+      setErro(textoDoErro(e))
       setApagando(false)
     }
   }

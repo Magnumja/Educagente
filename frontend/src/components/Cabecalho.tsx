@@ -1,6 +1,11 @@
+/**
+ * Cabeçalho de todas as páginas: logo (link para o início), link "Como a IA usa fontes" e o
+ * botão que abre o painel "Ajustes de leitura" (tamanho do texto, cores, nível de detalhe).
+ */
 import { useEffect, useId, useRef, useState } from 'react'
 import { BookOpenCheck, SlidersHorizontal, X } from 'lucide-react'
-import { Segmentado, botaoCls, larguraCls } from '@/components/ui'
+import { botaoCls, larguraCls } from '@/components/classes'
+import { Segmentado } from '@/components/ui'
 import { usePreferencias, type Detalhe, type Tamanho, type Tema } from '@/lib/preferencias'
 import { href } from '@/lib/rota'
 import { cn } from '@/lib/utils'
@@ -10,6 +15,7 @@ export function Cabecalho({ rotaAtual }: { rotaAtual: string }) {
   const painelId = useId()
   const botaoRef = useRef<HTMLButtonElement>(null)
 
+  // Esc fecha o painel e devolve o foco ao botão que o abriu (acessibilidade de teclado).
   useEffect(() => {
     if (!aberto) return
     const aoTeclar = (e: KeyboardEvent) => {
@@ -60,6 +66,7 @@ export function Cabecalho({ rotaAtual }: { rotaAtual: string }) {
   )
 }
 
+/** Painel que desce abaixo do cabeçalho; cada escolha muda o contexto de preferências na hora. */
 function PainelDeLeitura({ id, aoFechar }: { id: string; aoFechar: () => void }) {
   const { prefs, mudar } = usePreferencias()
   return (

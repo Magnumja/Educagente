@@ -1,38 +1,22 @@
+/**
+ * Peças de interface usadas em todas as telas: Botao, Aviso, Dica, Campo, Segmentado,
+ * Caixa, NumeroDoPasso e Carregando. As classes soltas (botaoCls, entradaCls, larguraCls)
+ * ficam em classes.ts.
+ */
 import { useId, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 import { AlertTriangle, CheckCircle2, Info, Lightbulb, Loader2, XCircle, type LucideIcon } from 'lucide-react'
+import { botaoCls, type TamanhoDoBotao, type Variante } from '@/components/classes'
 import { cn } from '@/lib/utils'
-
-/** Largura das páginas: usa a tela toda, com margens que crescem junto com ela. */
-export const larguraCls = 'mx-auto w-full max-w-[110rem] px-4 sm:px-6 lg:px-10'
 
 /* ---------------- Botões ---------------- */
 
-type Variante = 'primario' | 'secundario' | 'discreto' | 'perigo'
-
-const VARIANTES: Record<Variante, string> = {
-  primario:
-    'bg-acao text-acao-tinta hover:bg-acao-hover border-transparent shadow-[0_6px_16px_-6px_var(--acao)] hover:shadow-[0_10px_22px_-8px_var(--acao)]',
-  secundario: 'bg-superficie text-tinta border-linha-forte hover:bg-superficie-2 hover:border-tinta-2',
-  discreto: 'bg-transparent text-acao border-transparent hover:bg-acao-suave',
-  perigo: 'bg-superficie text-erro border-erro/60 hover:bg-erro-fundo',
-}
-
-export function botaoCls(variante: Variante = 'secundario', tamanho: 'p' | 'm' = 'm') {
-  return cn(
-    'inline-flex items-center justify-center gap-2 rounded-p border-[1.5px] font-semibold',
-    'transition-[background-color,border-color,box-shadow,transform] duration-200 active:scale-[0.97]',
-    'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:scale-100',
-    tamanho === 'm' ? 'min-h-11 px-5 py-2 text-[0.95rem]' : 'min-h-9 px-3 py-1.5 text-sm',
-    VARIANTES[variante],
-  )
-}
-
 interface BotaoProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variante?: Variante
-  tamanho?: 'p' | 'm'
+  tamanho?: TamanhoDoBotao
   carregando?: boolean
 }
 
+/** Botão padrão. Com carregando, mostra o giro e fica desabilitado para evitar clique duplo. */
 export function Botao({ variante = 'secundario', tamanho = 'm', carregando, className, children, disabled, ...resto }: BotaoProps) {
   return (
     <button
@@ -59,6 +43,7 @@ const TONS: Record<Tom, { cls: string; Icone: LucideIcon; cor: string }> = {
   ok: { cls: 'bg-ok-fundo border-ok/35', Icone: CheckCircle2, cor: 'text-ok' },
 }
 
+/** Mensagem de status (info, alerta, erro, ok). Erro usa role="alert" para o leitor de tela anunciar na hora. */
 export function Aviso({ tom = 'info', titulo, children, className }: { tom?: Tom; titulo?: string; children?: ReactNode; className?: string }) {
   const { cls, Icone, cor } = TONS[tom]
   return (
@@ -101,6 +86,10 @@ export function Dica({
 
 /* ---------------- Formulário ---------------- */
 
+/**
+ * Rótulo + campo + dica/erro, já ligados por id para acessibilidade. O campo vem como função
+ * (render prop) porque quem chama escolhe se é input ou textarea, e o Campo só entrega os atributos.
+ */
 export function Campo({
   rotulo,
   dica,
@@ -128,11 +117,6 @@ export function Campo({
     </div>
   )
 }
-
-export const entradaCls =
-  'w-full rounded-p border-[1.5px] border-linha-forte bg-superficie px-3.5 py-2.5 text-tinta placeholder:text-tinta-2 ' +
-  'transition-[border-color,box-shadow] duration-200 hover:border-tinta-2 focus:border-acao focus:shadow-[0_0_0_4px_var(--acao-suave)] focus:outline-none ' +
-  'aria-invalid:border-erro disabled:opacity-60'
 
 /** Grupo de opções exclusivas (rádios) com aparência de botões segmentados. */
 export function Segmentado<T extends string>({
@@ -184,6 +168,7 @@ export function Segmentado<T extends string>({
 
 /* ---------------- Estrutura ---------------- */
 
+/** Cartão branco com borda e sombra; interativa faz levantar no hover. */
 export function Caixa({
   children,
   className,
@@ -204,13 +189,13 @@ export function Caixa({
   )
 }
 
-/** Número de passo em círculo, para sequências reais (1, 2, 3). */
 const TONS_PASSO = {
   acao: 'bg-acao text-acao-tinta',
   ok: 'bg-ok text-superficie',
   neutro: 'bg-superficie-2 text-tinta-2 border border-linha-forte',
 }
 
+/** Número de passo em círculo, para sequências reais (1, 2, 3). */
 export function NumeroDoPasso({ n, tom = 'acao', className }: { n: number | string; tom?: keyof typeof TONS_PASSO; className?: string }) {
   return (
     <span
@@ -222,10 +207,11 @@ export function NumeroDoPasso({ n, tom = 'acao', className }: { n: number | stri
   )
 }
 
-export function Esqueleto({ className }: { className?: string }) {
+function Esqueleto({ className }: { className?: string }) {
   return <div className={cn('brilho-carregando rounded-p', className)} aria-hidden />
 }
 
+/** Esqueleto com brilho enquanto a página busca os dados. */
 export function Carregando({ texto = 'Carregando…' }: { texto?: string }) {
   return (
     <div className="space-y-3" role="status" aria-live="polite">

@@ -1,13 +1,21 @@
+/**
+ * Área do facilitador (#/facilitador...). Sem token, mostra o login; com token, um mini
+ * roteador: lista de oficinas, nova oficina (#/facilitador/nova) ou o detalhe de uma
+ * (#/facilitador/oficina/{id}, em DetalheDaOficina.tsx).
+ */
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { LogOut, Plus } from 'lucide-react'
-import { Aviso, Botao, Caixa, Campo, Carregando, botaoCls, entradaCls } from '@/components/ui'
-import { api, ErroApi, sessao, type OficinaFacilitador } from '@/lib/api'
+import { botaoCls, entradaCls } from '@/components/classes'
+import { Aviso, Botao, Caixa, Campo, Carregando } from '@/components/ui'
+import { api, sessao, sessaoExpirou, textoDoErro, type OficinaFacilitador } from '@/lib/api'
 import { href, navegar } from '@/lib/rota'
 import { cn, plural } from '@/lib/utils'
 import { DetalheDaOficina } from './DetalheDaOficina'
 
+/** partes = o resto da rota depois de #/facilitador: [], ['nova'] ou ['oficina', id]. */
 export function Facilitador({ partes }: { partes: string[] }) {
   const [logado, setLogado] = useState(!!sessao.facilitador())
+  // Usado no botão Sair e quando o servidor responde 401 (sessão expirou): as telas recebem como aoSessaoExpirar.
   const sair = useCallback(() => {
     api.facilitador.sair()
     setLogado(false)
@@ -40,6 +48,7 @@ export function Facilitador({ partes }: { partes: string[] }) {
   )
 }
 
+/** POST /facilitador/entrar com a senha; o token de sessão volta e fica no sessionStorage. */
 function Login({ aoEntrar }: { aoEntrar: () => void }) {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
@@ -53,7 +62,7 @@ function Login({ aoEntrar }: { aoEntrar: () => void }) {
       await api.facilitador.entrar(senha)
       aoEntrar()
     } catch (err) {
-      setErro((err as Error).message)
+      setErro(textoDoErro(err))
     } finally {
       setEnviando(false)
     }
@@ -89,6 +98,7 @@ function Login({ aoEntrar }: { aoEntrar: () => void }) {
   )
 }
 
+/** GET /facilitador/oficinas: lista com código, título, participantes e se está aberta. */
 function ListaDeOficinas({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
   const [oficinas, setOficinas] = useState<OficinaFacilitador[] | null>(null)
   const [erro, setErro] = useState('')
@@ -97,7 +107,7 @@ function ListaDeOficinas({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
     api.facilitador
       .oficinas()
       .then(setOficinas)
-      .catch((e: ErroApi) => (e.status === 401 ? aoSessaoExpirar() : setErro(e.message)))
+      .catch((e: unknown) => (sessaoExpirou(e) ? aoSessaoExpirar() : setErro(textoDoErro(e))))
   }, [aoSessaoExpirar])
 
   return (
@@ -139,6 +149,7 @@ function ListaDeOficinas({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
   )
 }
 
+/** Oficina de exemplo do botão "Preencher com o exemplo": perguntas em que a IA costuma errar. */
 const EXEMPLO = {
   titulo: 'Napoleão e o Brasil',
   perguntas: [
@@ -161,6 +172,7 @@ const EXEMPLO = {
 
 const VAZIA = { titulo: '', perguntas: [0, 1, 2].map(() => ({ texto: '', referencia: '' })) }
 
+/** Formulário de nova oficina: título + três perguntas (POST /facilitador/oficinas). */
 function NovaOficina({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
   const [dados, setDados] = useState(VAZIA)
   const [erro, setErro] = useState('')
@@ -178,8 +190,8 @@ function NovaOficina({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
       const o = await api.facilitador.criar(dados.titulo.trim(), dados.perguntas)
       navegar(`/facilitador/oficina/${o.id}`)
     } catch (err) {
-      if ((err as ErroApi).status === 401) aoSessaoExpirar()
-      else setErro((err as Error).message)
+      if (sessaoExpirou(err)) aoSessaoExpirar()
+      else setErro(textoDoErro(err))
       setEnviando(false)
     }
   }

@@ -1,11 +1,17 @@
-import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+/**
+ * Como uma resposta da IA aparece na tela: selo de procedência (sem fonte / com fontes /
+ * nada encontrado), texto com as citações [n] viradas botões, chips "De onde veio", a lista
+ * de trechos e, no modo técnico, as instruções exatas enviadas. Também tem o Escrevendo,
+ * mostrado enquanto a resposta não chega. Usado nas etapas 1, 3 e 4 e na tela do facilitador.
+ */
+import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { BookMarked, Bot, ChevronDown, Clock, FileText, MessageSquareDashed, SearchX } from 'lucide-react'
 import type { Resposta, Trecho } from '@/lib/api'
 import { usePreferencias } from '@/lib/preferencias'
-import { cn, plural, porcentagem } from '@/lib/utils'
+import { atraso, cn, plural, porcentagem } from '@/lib/utils'
 
 /** Selo de procedência: diz, com texto e ícone (nunca só com cor), de onde veio a resposta. */
-export function Procedencia({ resposta }: { resposta: Resposta }) {
+function Procedencia({ resposta }: { resposta: Resposta }) {
   if (resposta.tentativa === 1)
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-linha-forte bg-superficie px-2.5 py-0.5 text-sm font-medium text-tinta-2">
@@ -25,6 +31,7 @@ export function Procedencia({ resposta }: { resposta: Resposta }) {
   )
 }
 
+/** Rola até o trecho n desta resposta e põe o foco nele (para quem usa teclado ou leitor de tela). */
 function irParaTrecho(prefixo: string, n: number | string) {
   // Espera o painel abrir antes de rolar até o trecho.
   requestAnimationFrame(() => {
@@ -59,6 +66,7 @@ function TextoComCitacoes({ texto, trechos, aoCitar }: { texto: string; trechos:
   )
 }
 
+/** Trechos das fontes que a IA recebeu, numerados como no texto, com o realce marca-texto. */
 function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: string }) {
   const { prefs } = usePreferencias()
   return (
@@ -68,7 +76,7 @@ function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: stri
           key={i}
           id={`${prefixo}-${i + 1}`}
           tabIndex={-1}
-          style={{ '--i': i } as CSSProperties}
+          style={atraso(i)}
           className="surgir rounded-p border bg-superficie p-3.5 focus:outline-3 focus:outline-foco"
         >
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
@@ -80,7 +88,7 @@ function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: stri
             )}
           </p>
           <blockquote className="mt-2 text-[0.95rem] leading-relaxed">
-            <span className="marca-texto" style={{ '--i': i } as CSSProperties}>
+            <span className="marca-texto" style={atraso(i)}>
               {t.texto}
             </span>
           </blockquote>
@@ -90,12 +98,17 @@ function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: stri
   )
 }
 
+/**
+ * Uma resposta da IA. compacta esconde trechos e instruções (usada no "lembrar a resposta"
+ * e na tela do facilitador); trechosAbertos já abre a lista de trechos.
+ */
 export function RespostaIA({ resposta, compacta, trechosAbertos }: { resposta: Resposta; compacta?: boolean; trechosAbertos?: boolean }) {
   const { prefs } = usePreferencias()
   const prefixo = useId().replace(/:/g, '')
   const [aberto, setAberto] = useState(!!trechosAbertos)
   const temTrechos = resposta.trechos.length > 0
   // Resposta longa fica num bloco baixo (formato paisagem), com "ler inteira" para abrir.
+  // Mede depois de desenhar (useLayoutEffect) para não piscar: corta se passar de ~11 linhas.
   const caixaTexto = useRef<HTMLDivElement>(null)
   const [cortada, setCortada] = useState(false)
   const [inteira, setInteira] = useState(false)
@@ -104,6 +117,7 @@ export function RespostaIA({ resposta, compacta, trechosAbertos }: { resposta: R
     if (el) setCortada(el.scrollHeight > 11 * parseFloat(getComputedStyle(document.documentElement).fontSize) + 8)
   }, [resposta.texto])
 
+  /** Clicar numa citação [n] ou num chip "De onde veio": abre a lista e vai até o trecho. */
   function citar(n: number | string) {
     setAberto(true)
     irParaTrecho(prefixo, n)
@@ -203,6 +217,7 @@ export function RespostaIA({ resposta, compacta, trechosAbertos }: { resposta: R
   )
 }
 
+/** Tempo que a IA levou, em texto curto. */
 function tempo(segundos: number) {
   if (segundos < 1) return 'menos de 1 s'
   return `${Math.round(segundos)} s para responder`

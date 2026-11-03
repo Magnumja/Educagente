@@ -1,19 +1,28 @@
-import { useState, type CSSProperties } from 'react'
+/**
+ * Etapas 1 e 3 (a mesma tela, mudando a tentativa). Lista as três perguntas da oficina e
+ * pede à IA uma resposta para cada: tentativa 1 sem contexto, tentativa 2 com as fontes
+ * do participante (RAG no servidor). Enquanto espera mostra o Escrevendo; depois, a RespostaIA.
+ */
+import { useState } from 'react'
 import { BookMarked, Brain, ChevronDown, MousePointerClick, Play, RotateCcw, Sparkles } from 'lucide-react'
+import { Avancar, CabecalhoEtapa, type PropsEtapa } from '@/components/Etapa'
 import { Escrevendo, RespostaIA } from '@/components/RespostaIA'
 import { Aviso, Botao, Caixa, Dica, NumeroDoPasso } from '@/components/ui'
-import { api, type Pergunta, type Tentativa } from '@/lib/api'
+import { api, textoDoErro, type Pergunta, type Tentativa } from '@/lib/api'
+import { respostaDe } from '@/lib/etapas'
 import { usePreferencias } from '@/lib/preferencias'
 import { href } from '@/lib/rota'
-import { Avancar, CabecalhoEtapa, type PropsEtapa } from '../Oficina'
+import { atraso } from '@/lib/utils'
 
 export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tentativa: Tentativa }) {
   const { prefs } = usePreferencias()
+  // Perguntas esperando resposta da IA agora (pode haver mais de uma) e o erro de cada uma.
   const [pendentes, setPendentes] = useState<Set<number>>(new Set())
   const [erros, setErros] = useState<Record<number, string>>({})
   const [emLote, setEmLote] = useState(false)
 
-  const resposta = (p: Pergunta, t: Tentativa) => estado.respostas.find((r) => r.pergunta_id === p.id && r.tentativa === t)
+  const resposta = (p: Pergunta, t: Tentativa) => respostaDe(estado, p.id, t)
+  // Na etapa 3 só dá para perguntar com fontes na base e com a etapa 1 completa (para comparar depois).
   const semBase = tentativa === 2 && estado.documentos.length === 0
   const faltamPrimeiras = tentativa === 2 && estado.perguntas.some((p) => !resposta(p, 1))
   const bloqueado = semBase || faltamPrimeiras
@@ -21,6 +30,7 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
   const total = estado.perguntas.length
   const completo = respondidas === total
 
+  /** POST /eu/perguntar e depois recarregar(): a resposta nova chega pelo estado, não pelo retorno. */
   async function perguntar(p: Pergunta) {
     setPendentes((s) => new Set(s).add(p.id))
     setErros((er) => Object.fromEntries(Object.entries(er).filter(([k]) => Number(k) !== p.id)))
@@ -28,7 +38,7 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
       await api.perguntar(p.id, tentativa)
       await recarregar()
     } catch (e) {
-      setErros((er) => ({ ...er, [p.id]: (e as Error).message }))
+      setErros((er) => ({ ...er, [p.id]: textoDoErro(e) }))
     } finally {
       setPendentes((s) => {
         const novo = new Set(s)
@@ -64,20 +74,20 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
       <div className="mb-8 grid gap-4 md:grid-cols-2">
         {tentativa === 1 ? (
           <>
-            <Dica Icone={Brain} titulo="Como essa IA responde" style={{ '--i': 0 } as CSSProperties}>
+            <Dica Icone={Brain} titulo="Como essa IA responde" style={atraso(0)}>
               Ela escreve o que <strong>parece mais provável</strong>. Uma resposta bonita e segura pode estar errada.
             </Dica>
-            <Dica Icone={Sparkles} titulo="Seu papel aqui" style={{ '--i': 1 } as CSSProperties}>
+            <Dica Icone={Sparkles} titulo="Seu papel aqui" style={atraso(1)}>
               Só leia com atenção. Você vai conferir essas respostas na etapa 4.
             </Dica>
           </>
         ) : (
           <>
-            <Dica Icone={BookMarked} titulo="O que acontece por trás" style={{ '--i': 0 } as CSSProperties}>
+            <Dica Icone={BookMarked} titulo="O que acontece por trás" style={atraso(0)}>
               A plataforma procura nas suas fontes os trechos <strong>mais parecidos</strong> com a pergunta e entrega só
               esses à IA.
             </Dica>
-            <Dica Icone={MousePointerClick} titulo="Confira você mesmo" style={{ '--i': 1 } as CSSProperties}>
+            <Dica Icone={MousePointerClick} titulo="Confira você mesmo" style={atraso(1)}>
               Toque nos números amarelos da resposta para ler o trecho de onde veio a informação.
             </Dica>
           </>
@@ -119,7 +129,7 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
           const anterior = tentativa === 2 ? resposta(p, 1) : undefined
           const pendente = pendentes.has(p.id)
           return (
-            <Caixa as="li" key={p.id} className="surgir space-y-5" style={{ '--i': i } as CSSProperties}>
+            <Caixa as="li" key={p.id} className="surgir space-y-5" style={atraso(i)}>
               <div className="flex flex-wrap items-start gap-4">
                 <NumeroDoPasso n={p.ordem} tom={r ? 'ok' : 'acao'} />
                 <h3 className="min-w-0 flex-1 pt-1 text-xl font-semibold leading-snug">{p.texto}</h3>
@@ -133,7 +143,7 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
               {pendente ? (
                 <Escrevendo comFontes={tentativa === 2} />
               ) : r ? (
-                <RespostaIA resposta={r} trechosAbertos={false} />
+                <RespostaIA resposta={r} />
               ) : (
                 <div className="flex flex-wrap items-center gap-3 rounded-p border border-dashed p-4">
                   <Botao variante="secundario" onClick={() => perguntar(p)} disabled={bloqueado || emLote}>

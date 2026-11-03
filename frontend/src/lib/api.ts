@@ -1,8 +1,14 @@
 /**
- * Cliente da API (`backend/oficinas/api.py`). O participante se identifica pelo token
- * recebido ao entrar (header X-Participante); o facilitador, por um token de sessão
- * (Authorization: Bearer). Nenhum dos dois é a senha nem um id sequencial.
+ * Cliente da API (`backend/oficinas/api.py`). Toda conversa com o servidor passa por aqui.
+ * O participante se identifica pelo token recebido ao entrar (header X-Participante); o
+ * facilitador, por um token de sessão (Authorization: Bearer). Nenhum dos dois é a senha
+ * nem um id sequencial.
+ *
+ * Organização: tipos dos dados que o servidor devolve, guarda dos tokens (sessao),
+ * a função chamar() que faz o fetch e trata erros, e o objeto api com uma função por rota.
  */
+
+/* ---------------- Tipos dos dados ---------------- */
 
 export type Tentativa = 1 | 2
 export type Veredito = 'correta' | 'parcial' | 'errada' | 'nao_sei'
@@ -107,6 +113,9 @@ export interface OficinaDetalhe extends OficinaFacilitador {
   relatorio: LinhaRelatorio[]
 }
 
+/* ---------------- Erros ---------------- */
+
+/** Erro de uma chamada: status HTTP (0 = sem conexão) e uma mensagem pronta para mostrar. */
 export class ErroApi extends Error {
   status: number
   constructor(status: number, mensagem: string) {
@@ -114,6 +123,18 @@ export class ErroApi extends Error {
     this.status = status
   }
 }
+
+/** Texto para mostrar ao usuário a partir de qualquer erro capturado num catch. */
+export function textoDoErro(e: unknown): string {
+  return e instanceof Error ? e.message : 'Algo deu errado. Tente de novo.'
+}
+
+/** true quando o servidor recusou o token: a sessão terminou ou nunca existiu. */
+export function sessaoExpirou(e: unknown): boolean {
+  return e instanceof ErroApi && e.status === 401
+}
+
+/* ---------------- Tokens guardados no navegador ---------------- */
 
 const CHAVE_PARTICIPANTE = 'educagente:participante'
 const CHAVE_FACILITADOR = 'educagente:facilitador'
@@ -135,6 +156,7 @@ function gravar(chave: string, valor: string | null, armazenamento: Storage) {
   }
 }
 
+/** O token do participante fica no localStorage: recarregar ou voltar outro dia mantém o progresso. */
 export const sessao = {
   participante: () => ler(CHAVE_PARTICIPANTE, localStorage),
   definirParticipante: (token: string | null) => gravar(CHAVE_PARTICIPANTE, token, localStorage),
@@ -143,6 +165,9 @@ export const sessao = {
   definirFacilitador: (token: string | null) => gravar(CHAVE_FACILITADOR, token, sessionStorage),
 }
 
+/* ---------------- Chamada genérica ---------------- */
+
+/** Traduz a resposta de erro do servidor numa frase para a pessoa. */
 function mensagemDeErro(status: number, corpo: unknown): string {
   if (corpo && typeof corpo === 'object' && 'detail' in corpo) {
     const detalhe = (corpo as { detail: unknown }).detail
@@ -155,8 +180,10 @@ function mensagemDeErro(status: number, corpo: unknown): string {
   return `Algo deu errado (erro ${status}).`
 }
 
+/** Quem está chamando decide qual token vai no header. */
 type Quem = 'participante' | 'facilitador' | null
 
+/** Faz o fetch em /api, põe o token certo, e devolve JSON (ou Blob, no CSV). Falhas viram ErroApi. */
 async function chamar<T>(caminho: string, opcoes: RequestInit & { quem?: Quem } = {}): Promise<T> {
   const { quem = null, ...init } = opcoes
   const headers = new Headers(init.headers)
@@ -180,6 +207,8 @@ async function chamar<T>(caminho: string, opcoes: RequestInit & { quem?: Quem } 
 }
 
 const json = (dados: unknown) => JSON.stringify(dados)
+
+/* ---------------- Uma função por rota ---------------- */
 
 export const api = {
   saude: () => chamar<Saude>('/saude'),
@@ -244,7 +273,8 @@ export const api = {
   },
 }
 
-export function baixar(blob: Blob, nome: string) {
+/** Faz o navegador salvar o arquivo recebido (usado no CSV do facilitador). */
+function baixar(blob: Blob, nome: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

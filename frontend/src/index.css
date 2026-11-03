@@ -1,3 +1,4 @@
+/* Estilos globais: tokens de cor (OKLCH, claro e escuro), tamanhos de texto dos Ajustes de leitura e as animações. */
 @import "tailwindcss";
 
 @custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
@@ -143,7 +144,7 @@ html[data-tamanho="enorme"] { font-size: 137.5%; }
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
-/* Itens de lista entram em sequência: style={{ '--i': n }} */
+/* Itens de lista entram em sequência: style={atraso(n)} (lib/utils.ts) define --i */
 .surgir { animation: surgir 420ms var(--ease-saida) both; animation-delay: calc(var(--i, 0) * 70ms); }
 
 @keyframes entrar-pagina {
