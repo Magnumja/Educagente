@@ -1,16 +1,15 @@
 from django.conf import settings
-from ninja import Field, NinjaAPI, Schema
+from ninja import NinjaAPI
 
 from educagente.erros import EntradaInvalida, NaoEncontrado, ServicoIndisponivel
-from oficina.api import router as oficina_router
-from projetos.api import router as projetos_router
-from rag.llm import provedor_sem_chave
+from oficinas.api import facilitador, participante, publico
 
-api = NinjaAPI(title="Educagente")
-api.add_router("", oficina_router)
-api.add_router("", projetos_router)
+api = NinjaAPI(title="Educagente", docs_url="/docs" if settings.DEBUG else None)
+api.add_router("", publico)
+api.add_router("", participante)
+api.add_router("", facilitador)
 
-STATUS_POR_ERRO = {NaoEncontrado: 404, EntradaInvalida: 400, ServicoIndisponivel: 502}
+STATUS_POR_ERRO = {NaoEncontrado: 404, EntradaInvalida: 400, ServicoIndisponivel: 503}
 
 
 def responder_erro(request, erro: Exception):
@@ -21,35 +20,15 @@ for tipo_de_erro in STATUS_POR_ERRO:
     api.add_exception_handler(tipo_de_erro, responder_erro)
 
 
-@api.get("/saude")
+@api.get("/saude", tags=["público"])
 def saude(request):
-    provedor = settings.MODEL_PROVIDER
-    modo_demonstracao = provedor == "demo" or provedor_sem_chave(provedor)
+    demonstracao = settings.MODEL_PROVIDER == "demo" or (
+        settings.MODEL_PROVIDER == "anthropic" and not settings.ANTHROPIC_API_KEY
+    )
     return {
         "ok": True,
-        "provedor": provedor,
-        "modelo": settings.LLM_MODEL,
-        "llm_configurada": not modo_demonstracao,
+        "modelo": settings.LLM_MODEL if not demonstracao else None,
+        "demonstracao": demonstracao,
+        "embeddings_locais": settings.EMBEDDING_PROVIDER == "local",
+        "facilitador_configurado": bool(settings.FACILITADOR_SENHA),
     }
-
-
-class ValidarChave(Schema):
-    provider: str = Field(pattern="^(anthropic|openai)$")
-    api_key: str = Field(min_length=1, max_length=400)
-
-
-@api.post("/validar-chave")
-def validar_chave(request, dados: ValidarChave):
-    """Testa a chave com uma chamada que não gasta tokens (lista de modelos) e a descarta."""
-    try:
-        if dados.provider == "anthropic":
-            import anthropic
-
-            anthropic.Anthropic(api_key=dados.api_key).models.list(limit=1)
-        else:
-            import openai
-
-            openai.OpenAI(api_key=dados.api_key).models.list()
-    except Exception as erro:
-        return {"ok": False, "erro": str(erro)}
-    return {"ok": True}
