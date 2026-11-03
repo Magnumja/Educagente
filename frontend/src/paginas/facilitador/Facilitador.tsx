@@ -124,7 +124,7 @@ function ListaDeOficinas({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
         <Caixa className="space-y-2">
           <p className="font-semibold">Nenhuma oficina ainda.</p>
           <p className="text-tinta-2">
-            Crie uma com as três perguntas que a turma vai fazer. Dica: há um exemplo pronto sobre Napoleão no formulário, e o
+            Crie uma com as três perguntas que a turma vai fazer. Dica: há um exemplo pronto sobre direitos na internet (LGPD e Marco Civil) no formulário, e o
             comando <code className="font-mono text-sm">python manage.py criar_oficina_exemplo</code> cria um com fonte.
           </p>
         </Caixa>
@@ -151,21 +151,23 @@ function ListaDeOficinas({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
 
 /** Oficina de exemplo do botão "Preencher com o exemplo": perguntas em que a IA costuma errar. */
 const EXEMPLO = {
-  titulo: 'Napoleão e o Brasil',
+  titulo: 'Seus direitos na internet',
   perguntas: [
     {
-      texto: 'Napoleão Bonaparte chegou a visitar o Brasil?',
-      referencia: 'Não. Napoleão nunca esteve no Brasil; a ligação é indireta, pela invasão francesa a Portugal em 1807.',
+      texto:
+        'Pelo Marco Civil da Internet, por quanto tempo a operadora de internet precisa guardar os registros de conexão do cliente?',
+      referencia:
+        'Por 1 ano, sob sigilo (Marco Civil da Internet, art. 13). O prazo de 6 meses vale para aplicativos e sites, que guardam os registros de acesso (art. 15).',
     },
     {
-      texto: 'Por que a família real portuguesa veio para o Brasil em 1808?',
+      texto: 'Pela LGPD, se eu pedir a uma empresa a lista completa dos meus dados pessoais, quantos dias ela tem para responder?',
       referencia:
-        'Porque tropas de Napoleão, comandadas por Junot, invadiram Portugal em novembro de 1807. A corte fugiu escoltada pelos ingleses e chegou a Salvador em janeiro e ao Rio em março de 1808.',
+        'Até 15 dias, contados da data do pedido (LGPD, art. 19, II); a lei não fala em dias úteis. No formato simplificado, a resposta é imediata (art. 19, I).',
     },
     {
-      texto: 'Napoleão Bonaparte era muito baixo para a época dele?',
+      texto: 'Qual é o valor máximo da multa que a LGPD permite aplicar a uma empresa por infração?',
       referencia:
-        'Não. Media cerca de 1,69 m, altura comum na França da época; o mito vem da confusão entre polegadas francesas e inglesas e das caricaturas inglesas.',
+        'Até 2% do faturamento da empresa no Brasil no último exercício, sem os tributos, limitada a R$ 50 milhões por infração (LGPD, art. 52, II).',
     },
   ],
 }
@@ -208,7 +210,7 @@ function NovaOficina({ aoSessaoExpirar }: { aoSessaoExpirar: () => void }) {
           com mitos conhecidos ou detalhes locais funcionam bem.
         </p>
         <Botao tamanho="p" variante="secundario" onClick={() => setDados(EXEMPLO)}>
-          Preencher com o exemplo (Napoleão)
+          Preencher com o exemplo (direitos na internet)
         </Botao>
       </div>
 

@@ -138,7 +138,7 @@ function Ilustracao() {
       <div className="relative space-y-4 rounded-[1.5rem] border bg-superficie p-5 shadow-alta sm:p-6">
         <div className="surgir flex justify-end gap-2" style={atraso(0)}>
           <p className="max-w-[80%] rounded-2xl rounded-tr-md bg-acao px-4 py-2.5 font-medium text-acao-tinta">
-            Napoleão chegou a visitar o Brasil?
+            Por quanto tempo a operadora guarda meus registros de conexão?
           </p>
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-superficie-2 text-tinta-2">
             <User className="size-4" />
@@ -154,7 +154,7 @@ function Ilustracao() {
               <MessageSquareDashed className="size-3" /> Sem fonte
             </span>
             <p className="rounded-2xl rounded-tl-md border border-dashed border-linha-forte bg-superficie-2/60 px-4 py-2.5 text-[0.95rem]">
-              Sim, em 1808 ele acompanhou a corte até o Rio de Janeiro.
+              Por pelo menos 6 meses, segundo o Marco Civil da Internet.
             </p>
             <p className="pl-1 text-xs font-semibold text-erro">✗ Inventado, e dito com toda a segurança</p>
           </div>
@@ -169,13 +169,13 @@ function Ilustracao() {
               <BookMarked className="size-3" /> Com fontes
             </span>
             <p className="rounded-2xl rounded-tl-md bg-superficie-2 px-4 py-2.5 text-[0.95rem]">
-              Não. Ele nunca esteve no Brasil; foi a invasão de Portugal que trouxe a corte{' '}
+              Por 1 ano, sob sigilo. Os 6 meses valem para aplicativos e sites{' '}
               <span className="rounded bg-evidencia px-1 font-mono text-xs font-bold">1</span>
             </p>
             <p className="flex items-center gap-1.5 pl-1 text-xs text-tinta-2">
               <FileText className="size-3" />
               <span className="marca-texto font-medium text-tinta" style={atraso(6)}>
-                napoleao.txt, página 1
+                direitos-digitais.txt, página 1
               </span>
             </p>
           </div>
