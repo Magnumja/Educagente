@@ -1,7 +1,17 @@
-"""Uma oficina tem três perguntas fixas, fontes sugeridas pelo facilitador e participantes.
+"""Tabelas do banco (SQLite) e como se relacionam.
 
+Uma oficina tem três perguntas fixas, fontes sugeridas pelo facilitador e participantes.
 Cada participante faz as mesmas três perguntas duas vezes (sem contexto e com fontes) e
 avalia a diferença entre as respostas. Nenhum dado pessoal além de um apelido.
+
+  Oficina 1-N Pergunta            (as três perguntas, com a referência do facilitador)
+  Oficina 1-N Documento           (fontes sugeridas: documento.oficina preenchido)
+  Oficina 1-N Participante
+  Participante 1-N Documento      (a base do participante: documento.participante preenchido)
+  Documento 1-N Trecho            (pedaços de texto com o vetor do embedding)
+  Participante + Pergunta -> Resposta (uma por tentativa) e Avaliacao (uma por pergunta)
+
+Apagar uma oficina ou um participante apaga em cascata tudo o que depende dele.
 """
 import secrets
 
@@ -18,6 +28,8 @@ def gerar_codigo() -> str:
 
 
 class Oficina(models.Model):
+    """Uma sessão da oficina; os participantes entram com o `codigo`."""
+
     titulo = models.CharField(max_length=120)
     codigo = models.CharField(max_length=6, unique=True, default=gerar_codigo)
     aberta = models.BooleanField(default=True, help_text="Fechada, ninguém novo entra.")
@@ -47,6 +59,8 @@ class Pergunta(models.Model):
 
 
 class Participante(models.Model):
+    """Quem entrou com um apelido. O token de acesso fica só no navegador; aqui, o hash dele."""
+
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE, related_name="participantes")
     apelido = models.CharField(max_length=40)
     token_hash = models.CharField(max_length=64, unique=True)
@@ -90,6 +104,8 @@ class Documento(models.Model):
 
 
 class Trecho(models.Model):
+    """Um pedaço de uma fonte (chunk) e o vetor do seu embedding, usado na busca."""
+
     documento = models.ForeignKey(Documento, on_delete=models.CASCADE, related_name="trechos")
     pagina = models.PositiveIntegerField()
     texto = models.TextField()
@@ -99,10 +115,13 @@ class Trecho(models.Model):
         ordering = ["id"]
 
     def vetor_np(self) -> np.ndarray:
+        """Converte os bytes gravados de volta no vetor numpy usado pela busca."""
         return np.frombuffer(self.vetor, dtype=np.float32)
 
 
 class Resposta(models.Model):
+    """O que a IA respondeu numa tentativa, com os trechos citados e as instruções enviadas."""
+
     SEM_CONTEXTO, COM_FONTES = 1, 2
 
     participante = models.ForeignKey(Participante, on_delete=models.CASCADE, related_name="respostas")

@@ -1,68 +1,84 @@
-"""Adaptadores de chat atrás da mesma interface. O modelo é escolhido pela equipe no
-`backend/.env`; o participante nunca escolhe modelo nem informa chave.
+"""Etapa 6 do RAG: enviar as instruções e a pergunta ao modelo de chat.
+
+Entrada: o prompt de sistema (de `prompts.py`) e o texto da pergunta. Saída: um
+`RespostaDoModelo` com o texto, os tokens gastos e o tempo.
+
+Cada provedor tem um adaptador com o mesmo método `conversar`, então o resto do sistema
+não sabe (nem precisa saber) qual IA está do outro lado. O modelo é escolhido pela
+equipe no `backend/.env`; o participante nunca escolhe modelo nem informa chave.
 """
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass
 
+from rag.prompts import MARCADOR_TRECHOS
+
+MAX_TOKENS_RESPOSTA = 700
+
 
 @dataclass
-class ChatResult:
-    answer: str
-    tokens_in: int
-    tokens_out: int
-    time_seconds: float
+class RespostaDoModelo:
+    texto: str
+    tokens_entrada: int
+    tokens_saida: int
+    tempo_segundos: float
 
 
 class FalhaDoProvedor(Exception):
     """O provedor de IA não respondeu. A mensagem já vem pronta para o participante."""
 
 
-class ChatAdapter:
-    def chat(self, system: str, question: str) -> ChatResult:
+class AdaptadorDeChat:
+    """Interface comum: recebe as instruções e a pergunta, devolve a resposta."""
+
+    def conversar(self, sistema: str, pergunta: str) -> RespostaDoModelo:
         raise NotImplementedError
 
 
-class OllamaAdapter(ChatAdapter):
-    def __init__(self, model: str):
-        self.model = model
+class AdaptadorOllama(AdaptadorDeChat):
+    """Modelo aberto rodando no servidor da turma (sem custo, sem internet)."""
 
-    def chat(self, system: str, question: str) -> ChatResult:
+    def __init__(self, modelo: str):
+        self.modelo = modelo
+
+    def conversar(self, sistema: str, pergunta: str) -> RespostaDoModelo:
         import ollama
 
         inicio = time.monotonic()
         try:
-            resp = ollama.chat(
-                model=self.model,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": question}],
+            resposta = ollama.chat(
+                model=self.modelo,
+                messages=[{"role": "system", "content": sistema}, {"role": "user", "content": pergunta}],
                 stream=False,
             )
         except Exception as erro:
             raise FalhaDoProvedor("O servidor de IA da turma (Ollama) não respondeu. Avise o facilitador.") from erro
-        return ChatResult(
-            answer=resp["message"]["content"],
-            tokens_in=resp.get("prompt_eval_count", 0) or 0,
-            tokens_out=resp.get("eval_count", 0) or 0,
-            time_seconds=time.monotonic() - inicio,
+        return RespostaDoModelo(
+            texto=resposta["message"]["content"],
+            tokens_entrada=resposta.get("prompt_eval_count", 0) or 0,
+            tokens_saida=resposta.get("eval_count", 0) or 0,
+            tempo_segundos=time.monotonic() - inicio,
         )
 
 
-class AnthropicAdapter(ChatAdapter):
-    def __init__(self, model: str, api_key: str):
-        self.model = model
-        self.api_key = api_key
+class AdaptadorAnthropic(AdaptadorDeChat):
+    """Modelo Claude pela API da Anthropic (precisa de ANTHROPIC_API_KEY no servidor)."""
 
-    def chat(self, system: str, question: str) -> ChatResult:
+    def __init__(self, modelo: str, chave: str):
+        self.modelo = modelo
+        self.chave = chave
+
+    def conversar(self, sistema: str, pergunta: str) -> RespostaDoModelo:
         import anthropic
 
         inicio = time.monotonic()
         try:
-            msg = anthropic.Anthropic(api_key=self.api_key).messages.create(
-                model=self.model,
-                max_tokens=700,
-                system=system,
-                messages=[{"role": "user", "content": question}],
+            mensagem = anthropic.Anthropic(api_key=self.chave).messages.create(
+                model=self.modelo,
+                max_tokens=MAX_TOKENS_RESPOSTA,
+                system=sistema,
+                messages=[{"role": "user", "content": pergunta}],
             )
         except anthropic.RateLimitError as erro:
             raise FalhaDoProvedor("Muitas perguntas ao mesmo tempo. Espere alguns segundos e tente de novo.") from erro
@@ -70,37 +86,41 @@ class AnthropicAdapter(ChatAdapter):
             raise FalhaDoProvedor("A chave de IA do servidor é inválida. Avise o facilitador.") from erro
         except anthropic.APIError as erro:
             raise FalhaDoProvedor("O serviço de IA não respondeu agora. Tente de novo em instantes.") from erro
-        return ChatResult(
-            answer="".join(b.text for b in msg.content if b.type == "text"),
-            tokens_in=msg.usage.input_tokens,
-            tokens_out=msg.usage.output_tokens,
-            time_seconds=time.monotonic() - inicio,
+        return RespostaDoModelo(
+            texto="".join(bloco.text for bloco in mensagem.content if bloco.type == "text"),
+            tokens_entrada=mensagem.usage.input_tokens,
+            tokens_saida=mensagem.usage.output_tokens,
+            tempo_segundos=time.monotonic() - inicio,
         )
 
 
-class DemoAdapter(ChatAdapter):
+class AdaptadorDemonstracao(AdaptadorDeChat):
     """Sem modelo de verdade: devolve os trechos recebidos, para o fluxo funcionar offline."""
 
     AVISO = "[Modo demonstração: nenhuma IA real foi consultada.]\n\n"
 
-    def chat(self, system: str, question: str) -> ChatResult:
-        marcador = "TRECHOS DAS FONTES:\n"
-        if marcador in system:
-            # Repete o começo do trecho mais parecido, citando-o, como uma IA obediente faria.
-            primeiro = system.split(marcador, 1)[1].split("\n[2]", 1)[0]
-            texto = " ".join(primeiro.split(") ", 1)[-1].split())
+    def conversar(self, sistema: str, pergunta: str) -> RespostaDoModelo:
+        if MARCADOR_TRECHOS in sistema:
+            # Repete o começo do trecho [1] (o mais parecido), citando-o, como uma IA obediente faria.
+            primeiro = sistema.split(MARCADOR_TRECHOS, 1)[1].split("\n[2]", 1)[0]
+            texto = " ".join(primeiro.split(") ", 1)[-1].split())  # tira o "[1] (documento, p. N)"
             resposta = self.AVISO + f"Segundo as fontes: {texto[:280].rstrip()}… [1]"
         else:
             resposta = (
                 self.AVISO + "Uma IA real responderia de memória aqui, e poderia acertar, errar ou inventar "
                 "detalhes com toda a segurança."
             )
-        return ChatResult(answer=resposta, tokens_in=0, tokens_out=0, time_seconds=0.0)
+        return RespostaDoModelo(texto=resposta, tokens_entrada=0, tokens_saida=0, tempo_segundos=0.0)
 
 
-def build_adapter(provider: str, model: str, api_key: str = "") -> ChatAdapter:
-    if provider == "ollama":
-        return OllamaAdapter(model)
-    if provider == "anthropic" and api_key:
-        return AnthropicAdapter(model, api_key)
-    return DemoAdapter()
+def modo_demonstracao(provedor: str, chave: str = "") -> bool:
+    """Verdadeiro quando não há IA real configurada (provedor "demo", desconhecido ou Anthropic sem chave)."""
+    return not (provedor == "ollama" or (provedor == "anthropic" and chave))
+
+
+def criar_adaptador(provedor: str, modelo: str, chave: str = "") -> AdaptadorDeChat:
+    if modo_demonstracao(provedor, chave):
+        return AdaptadorDemonstracao()
+    if provedor == "ollama":
+        return AdaptadorOllama(modelo)
+    return AdaptadorAnthropic(modelo, chave)

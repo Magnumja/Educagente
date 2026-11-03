@@ -1,3 +1,7 @@
+"""Telas do Django admin (`/admin/`), para a equipe inspecionar o banco durante os testes.
+
+O facilitador usa o painel do site, não o admin. O hash do token fica escondido.
+"""
 from django.contrib import admin
 
 from oficinas.models import Avaliacao, Documento, Oficina, Participante, Pergunta, Resposta

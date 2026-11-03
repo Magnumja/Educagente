@@ -1,4 +1,5 @@
 """O fluxo da proposta: perguntar sem contexto, adicionar fontes, perguntar de novo e comparar."""
+from unittest import mock
 from tests.apoio import FONTE_PANTANAL, TesteDaApi
 
 
@@ -135,3 +136,9 @@ class Documentos(TesteDaApi):
             self.assertEqual(r.status_code, 200, r.content)
         r = self.json("post", "/api/eu/textos", {"titulo": "extra", "texto": "conteúdo de teste " * 3}, **self.auth)
         self.assertEqual(r.status_code, 400)
+
+    def test_fonte_que_estouraria_a_base_nao_e_gravada(self):
+        with mock.patch("oficinas.services.MAX_TRECHOS_NA_BASE", 0):
+            r = self.json("post", "/api/eu/textos", {"titulo": "grande", "texto": FONTE_PANTANAL}, **self.auth)
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(self.json("get", "/api/eu", **self.auth).json()["documentos"], [])

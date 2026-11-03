@@ -1,4 +1,8 @@
-"""Extração de texto de documentos enviados: PDF por página (pypdf), TXT como página única.
+"""Etapa 1 do RAG: extrair o texto de um arquivo enviado.
+
+Entrada: nome do arquivo e seus bytes. Saída: lista de `PaginaExtraida` (PDF página a
+página com pypdf; TXT vira uma página única). Quem chama é `oficinas/services.py`, antes
+do corte em trechos.
 
 Tudo acontece em memória: o arquivo original não é guardado no servidor, só os trechos
 de texto e seus embeddings (menos dado pessoal parado em disco).
@@ -24,15 +28,16 @@ class PaginaExtraida:
 
 
 def extrair_paginas(nome_arquivo: str, conteudo: bytes) -> list[PaginaExtraida]:
-    sufixo = PurePath(nome_arquivo).suffix.lower()
-    if sufixo == ".pdf":
+    """Escolhe o leitor pela extensão do arquivo."""
+    extensao = PurePath(nome_arquivo).suffix.lower()
+    if extensao == ".pdf":
         return _extrair_pdf(conteudo)
-    if sufixo == ".txt":
-        return [PaginaExtraida(pagina=1, texto=_decodificar(conteudo).strip())]
+    if extensao == ".txt":
+        return [PaginaExtraida(pagina=1, texto=_decodificar_txt(conteudo).strip())]
     raise ArquivoIlegivel("Envie um arquivo PDF ou TXT.")
 
 
-def _decodificar(conteudo: bytes) -> str:
+def _decodificar_txt(conteudo: bytes) -> str:
     # Bloco de notas do Windows ainda salva em ANSI (cp1252) com frequência.
     for codificacao in ("utf-8-sig", "cp1252"):
         try:
@@ -43,6 +48,7 @@ def _decodificar(conteudo: bytes) -> str:
 
 
 def _extrair_pdf(conteudo: bytes) -> list[PaginaExtraida]:
+    # Import tardio: o pypdf só é carregado quando alguém envia um PDF.
     from pypdf import PdfReader
     from pypdf.errors import PdfReadError
 
@@ -53,10 +59,11 @@ def _extrair_pdf(conteudo: bytes) -> list[PaginaExtraida]:
         if len(leitor.pages) > MAX_PAGINAS:
             raise ArquivoIlegivel(f"O PDF tem mais de {MAX_PAGINAS} páginas. Envie só a parte que interessa.")
         return [
-            PaginaExtraida(pagina=i, texto=(pagina.extract_text() or "").strip())
-            for i, pagina in enumerate(leitor.pages, start=1)
+            PaginaExtraida(pagina=numero, texto=(pagina.extract_text() or "").strip())
+            for numero, pagina in enumerate(leitor.pages, start=1)
         ]
     except ArquivoIlegivel:
         raise
     except (PdfReadError, ValueError, KeyError, OSError) as erro:
+        # O pypdf solta erros variados para arquivos quebrados; o participante só precisa saber disto.
         raise ArquivoIlegivel("Não foi possível ler o PDF. Ele pode estar corrompido.") from erro

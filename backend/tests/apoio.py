@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from rag.llm import ChatResult
+from rag.llm import RespostaDoModelo
 
 SENHA = "senha-de-teste-bem-longa"
 FONTE_PANTANAL = (
@@ -25,17 +25,17 @@ PERGUNTAS = [
 
 
 class ModeloFalso:
-    """Substitui `build_adapter`: registra cada chamada e devolve uma resposta previsível."""
+    """Substitui `criar_adaptador`: registra cada chamada e devolve uma resposta previsível."""
 
     def __init__(self):
         self.chamadas: list[dict] = []
 
-    def construir(self, provider, model, api_key=""):
+    def construir(self, provedor, modelo, chave=""):
         return self
 
-    def chat(self, system: str, question: str) -> ChatResult:
-        self.chamadas.append({"system": system, "question": question})
-        return ChatResult(answer=f"resposta para: {question}", tokens_in=1, tokens_out=1, time_seconds=0.0)
+    def conversar(self, sistema: str, pergunta: str) -> RespostaDoModelo:
+        self.chamadas.append({"system": sistema, "question": pergunta})
+        return RespostaDoModelo(texto=f"resposta para: {pergunta}", tokens_entrada=1, tokens_saida=1, tempo_segundos=0.0)
 
 
 @override_settings(
@@ -45,7 +45,7 @@ class TesteDaApi(TestCase):
     def setUp(self):
         cache.clear()  # zera os limites de uso entre testes
         self.modelo = ModeloFalso()
-        patcher = mock.patch("oficinas.services.build_adapter", side_effect=self.modelo.construir)
+        patcher = mock.patch("oficinas.services.criar_adaptador", side_effect=self.modelo.construir)
         patcher.start()
         self.addCleanup(patcher.stop)
 

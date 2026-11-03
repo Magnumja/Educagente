@@ -1,7 +1,8 @@
 """Configuração única, lida do ambiente (`backend/.env` ou Compose).
 
 DJANGO_DEBUG=1 é o modo local (runserver); com 0 (padrão, usado no Docker) a
-DJANGO_SECRET_KEY passa a ser obrigatória.
+DJANGO_SECRET_KEY passa a ser obrigatória. Os nomes e valores possíveis de cada
+variável estão comentados em `backend/.env.example`.
 """
 import os
 from pathlib import Path
