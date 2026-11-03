@@ -56,6 +56,10 @@ else
 fi
 echo "  .env pronto (permissão 600: só o seu usuário lê)"
 
+# Pasta do banco criada pelo seu usuário: se o Docker criá-la, fica do root e a API não grava.
+mkdir -p backend/data
+[ -w backend/data ] || erro "backend/data pertence a outro usuário. Rode: sudo chown -R \$USER: backend/data"
+
 if [ -n "$DOMINIO" ]; then
   COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.prod.yml)
 

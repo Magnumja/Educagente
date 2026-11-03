@@ -6,6 +6,9 @@ cd "$(dirname "$0")"
 
 PY=python3; command -v python3 >/dev/null || PY=python
 [ -f backend/.env ] || cp backend/.env.example backend/.env
+# A pasta do banco precisa existir antes do compose: se o Docker criá-la, ela fica do root
+# e o usuário do container não consegue gravar o SQLite ("unable to open database file").
+mkdir -p backend/data
 # Com DJANGO_DEBUG=0 o Django exige uma chave secreta: gera uma só na primeira vez.
 if ! grep -qE '^DJANGO_SECRET_KEY=.+' backend/.env; then
   sed -i '/^DJANGO_SECRET_KEY=$/d' backend/.env
