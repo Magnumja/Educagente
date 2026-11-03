@@ -89,15 +89,20 @@ flowchart LR
 ```
 backend/
   educagente/   settings, urls (API + site), erros → 400/404/503
-  oficinas/     modelos, services.py (regras), api.py (rotas Ninja), exemplos/, comando de exemplo
-  rag/          núcleo RAG sem Django
+  oficinas/     models.py, services.py (regras), api.py (rotas), schemas.py (entrada/saída),
+                exportacao.py (CSV), exemplos/, comando de exemplo
+  rag/          núcleo RAG sem Django: ingestion, chunking, embeddings, busca, prompts, llm
   tests/        fluxo, segurança/isolamento e núcleo RAG (sem chamar IA de verdade)
 frontend/src/
   App.tsx       cabeçalho, avisos e rotas
   paginas/      Inicio, Entrar, Oficina (+ oficina/ etapas), ComoFunciona, facilitador/
-  components/   ui.tsx (botões, campos, avisos), RespostaIA.tsx (resposta + fontes), Cabecalho.tsx
-  lib/          api.ts, rota.ts, preferencias.tsx, etapas.ts
+  components/   ui.tsx, classes.ts, RespostaIA.tsx, Trilha.tsx, Etapa.tsx, Cabecalho.tsx
+  lib/          api.ts, rota.ts, etapas.ts, preferencias.ts, utils.ts
+docs/
+  GUIA-DO-CODIGO.md   cada parte explicada: entrada, saída, banco, modelo, segurança e FAQ
 ```
+
+**Para entender o código por dentro, leia o [Guia do código](docs/GUIA-DO-CODIGO.md).**
 
 ## Como subir
 
