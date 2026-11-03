@@ -1,6 +1,7 @@
 /**
  * Página inicial (#/). Quem ainda não entrou digita o código da oficina; quem já tem token
- * salvo vê "Continuar de onde parei". Também resume a oficina e tem a ilustração animada.
+ * salvo vê "Continuar de onde parei" ou "Entrar em outra oficina". Também resume a oficina e
+ * tem a ilustração animada.
  */
 import { useState, type FormEvent } from 'react'
 import { ArrowRight, BookMarked, Bot, FileText, GraduationCap, MessageSquareDashed, Scale, User } from 'lucide-react'
@@ -19,7 +20,10 @@ const PASSOS = [
 ]
 
 export function Inicio() {
-  const temSessao = !!sessao.participante()
+  // "Entrar em outra oficina" troca o aviso pelo formulário. O token antigo só é substituído
+  // quando a entrada na nova oficina dá certo (#/entrar/CODIGO).
+  const [outraOficina, setOutraOficina] = useState(false)
+  const temSessao = !!sessao.participante() && !outraOficina
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState('')
 
@@ -54,12 +58,25 @@ export function Inicio() {
               <div className="space-y-4">
                 <h2 className="text-lg font-bold">Você já está numa oficina</h2>
                 <p className="text-tinta-2">Seu progresso ficou salvo neste navegador.</p>
-                <a href={href('/oficina')} className={botaoCls('primario')}>
-                  Continuar de onde parei <ArrowRight className="size-4" aria-hidden />
-                </a>
+                <div className="flex flex-wrap items-center gap-3">
+                  <a href={href('/oficina')} className={botaoCls('primario')}>
+                    Continuar de onde parei <ArrowRight className="size-4" aria-hidden />
+                  </a>
+                  <Botao variante="discreto" onClick={() => setOutraOficina(true)}>
+                    Entrar em outra oficina
+                  </Botao>
+                </div>
               </div>
             ) : (
               <form onSubmit={entrar} className="space-y-4" noValidate>
+                {outraOficina && (
+                  <p className="text-sm text-tinta-2">
+                    Ao entrar na nova oficina, a anterior deixa de abrir neste navegador.{' '}
+                    <button type="button" className="font-semibold text-acao underline" onClick={() => setOutraOficina(false)}>
+                      Voltar
+                    </button>
+                  </p>
+                )}
                 <Campo rotulo="Código da oficina" dica="Está na tela projetada pelo facilitador." erro={erro || undefined}>
                   {(props) => (
                     <input
@@ -138,7 +155,7 @@ function Ilustracao() {
       <div className="relative space-y-4 rounded-[1.5rem] border bg-superficie p-5 shadow-alta sm:p-6">
         <div className="surgir flex justify-end gap-2" style={atraso(0)}>
           <p className="max-w-[80%] rounded-2xl rounded-tr-md bg-acao px-4 py-2.5 font-medium text-acao-tinta">
-            Napoleão chegou a visitar o Brasil?
+            Por quanto tempo a operadora guarda meus registros de conexão?
           </p>
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-superficie-2 text-tinta-2">
             <User className="size-4" />
@@ -154,7 +171,7 @@ function Ilustracao() {
               <MessageSquareDashed className="size-3" /> Sem fonte
             </span>
             <p className="rounded-2xl rounded-tl-md border border-dashed border-linha-forte bg-superficie-2/60 px-4 py-2.5 text-[0.95rem]">
-              Sim, em 1808 ele acompanhou a corte até o Rio de Janeiro.
+              Por pelo menos 6 meses, segundo o Marco Civil da Internet.
             </p>
             <p className="pl-1 text-xs font-semibold text-erro">✗ Inventado, e dito com toda a segurança</p>
           </div>
@@ -169,13 +186,13 @@ function Ilustracao() {
               <BookMarked className="size-3" /> Com fontes
             </span>
             <p className="rounded-2xl rounded-tl-md bg-superficie-2 px-4 py-2.5 text-[0.95rem]">
-              Não. Ele nunca esteve no Brasil; foi a invasão de Portugal que trouxe a corte{' '}
+              Por 1 ano, sob sigilo. Os 6 meses valem para aplicativos e sites{' '}
               <span className="rounded bg-evidencia px-1 font-mono text-xs font-bold">1</span>
             </p>
             <p className="flex items-center gap-1.5 pl-1 text-xs text-tinta-2">
               <FileText className="size-3" />
               <span className="marca-texto font-medium text-tinta" style={atraso(6)}>
-                napoleao.txt, página 1
+                direitos-digitais.txt, página 1
               </span>
             </p>
           </div>
