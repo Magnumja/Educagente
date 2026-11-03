@@ -1,0 +1,42 @@
+# Produção num servidor na internet (VPS), por cima do docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# - Caddy recebe o tráfego nas portas 80/443 e tira o certificado HTTPS sozinho (Let's Encrypt)
+#   para o domínio em DOMINIO (backend/.env). O DNS do domínio precisa apontar para o servidor.
+# - O Ollama roda num container próprio (no laboratório ele fica no host).
+# - A API deixa de ficar exposta direto na porta 8000: só o Caddy fala com ela.
+services:
+  api:
+    ports: !reset []
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - DJANGO_HTTPS=1
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:0.6.5
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - backend/.env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_dados:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  caddy_dados:
+  caddy_config:

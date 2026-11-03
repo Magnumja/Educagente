@@ -90,6 +90,17 @@ X_FRAME_OPTIONS = "DENY"
 # Limites de uso por IP: só o REMOTE_ADDR conta (X-Forwarded-For pode ser forjado).
 NINJA_NUM_PROXIES = 0
 
+# Produção na internet: o Caddy (docker-compose.prod.yml) termina o HTTPS e repassa para cá.
+# No laboratório (HTTP na rede local) deixe DJANGO_HTTPS=0.
+if os.getenv("DJANGO_HTTPS", "0") == "1":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24  # um dia: dá para voltar atrás se o domínio mudar
+    CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if h not in ("*", "localhost", "127.0.0.1")]
+    # Atrás de um proxy só, o IP real é o último do X-Forwarded-For que o Caddy acrescenta.
+    NINJA_NUM_PROXIES = 1
+
 # Facilitador: uma senha por instalação. Vazia = painel do facilitador desligado.
 FACILITADOR_SENHA = os.getenv("FACILITADOR_SENHA", "")
 if FACILITADOR_SENHA and len(FACILITADOR_SENHA) < 12:

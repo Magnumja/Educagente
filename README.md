@@ -140,12 +140,38 @@ MODEL_PROVIDER=demo EMBEDDING_PROVIDER=local ./iniciar.sh  # sem Ollama nem chav
 
 Nunca commite o `.env`.
 
+### Produção na internet (servidor com HTTPS)
+
+Para acessar de qualquer lugar, use um servidor Linux (VPS) com Docker, **pelo menos 8 GB de
+RAM** (os modelos do Ollama rodam em CPU) e um domínio apontando para o IP dele.
+
+```bash
+git clone https://github.com/Magnumja/rag-oficina.git && cd rag-oficina
+cp backend/.env.example backend/.env
+# edite: DJANGO_SECRET_KEY, FACILITADOR_SENHA, DOMINIO=oficina.seudominio.com.br
+#        e DJANGO_ALLOWED_HOSTS=oficina.seudominio.com.br
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec ollama ollama pull bge-m3
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec ollama ollama pull llama3.2:3b
+```
+
+O Caddy tira o certificado HTTPS sozinho (portas 80 e 443 abertas no firewall) e só ele fica
+exposto; a API e o Ollama ficam na rede interna do Docker. Com `MODEL_PROVIDER=anthropic` o
+servidor pode ser menor, mas as perguntas e os trechos das fontes passam a ir para a Anthropic.
+
+Atualizar depois: `git pull` e o mesmo `up -d --build`. O banco fica em `backend/data/`:
+faça cópia desse diretório antes de atualizar.
+
 ### Testes
 
 ```bash
 cd backend && DJANGO_DEBUG=1 .venv/bin/python manage.py test     # Windows: .venv\Scripts\python
 cd frontend && npm run build && npm run lint
+./testar-producao.sh https://oficina.seudominio.com.br          # servidor no ar (ou http://localhost:8000)
 ```
+
+O `testar-producao.sh` cria uma oficina temporária, confere site, login do facilitador,
+embeddings, a pergunta sem contexto, a pergunta com fontes e o CSV, e apaga tudo no fim.
 
 ## Antes de cada oficina
 
