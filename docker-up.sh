@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Sobe a API (Django) em Docker, garantindo antes que o Ollama do host está acessível
-# pelo container (ver ollama.sh). Não sobe o frontend — rode à parte com
-# `cd frontend && npm run dev`.
+# Sobe a plataforma em Docker (API + site compilado, tudo na porta 8000), garantindo
+# antes que o Ollama do host está acessível pelo container (ver ollama.sh).
 set -e
 cd "$(dirname "$0")"
 
@@ -12,10 +11,13 @@ if ! grep -qE '^DJANGO_SECRET_KEY=.+' backend/.env; then
   echo "DJANGO_SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" >> backend/.env
   echo "Gerei uma DJANGO_SECRET_KEY em backend/.env."
 fi
+if ! grep -qE '^FACILITADOR_SENHA=.+' backend/.env; then
+  echo "Aviso: FACILITADOR_SENHA está vazia em backend/.env; o painel do facilitador ficará desligado."
+fi
 
 ./ollama.sh
 
-# Na subida o container roda as migrations e importa data/oficina.db (só na primeira vez).
+# Na subida o container roda as migrations.
 docker compose up --build -d
 
 echo "Aguardando a API..."
@@ -24,4 +26,4 @@ for _ in $(seq 30); do
   sleep 2
 done
 curl -fs http://localhost:8000/api/saude && echo
-echo "API em http://localhost:8000 — admin em /admin, documentação em /api/docs"
+echo "Plataforma em http://localhost:8000 (na rede do laboratório, use o IP desta máquina)."

@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
-# Modo local, sem Docker: API Django (runserver, porta 8000) e site (Vite, porta 5173).
+# Modo local, sem Docker: API Django (porta 8000) e site no Vite (porta 5173, com recarga).
+# Sem Ollama nem chave? Rode com MODEL_PROVIDER=demo EMBEDDING_PROVIDER=local ./iniciar.sh
 set -e
 cd "$(dirname "$0")"
 
-[ -d backend/.venv ] || python3 -m venv backend/.venv
-backend/.venv/bin/pip install -q -r backend/requirements.txt
+PY=python3; command -v python3 >/dev/null || PY=python
+[ -d backend/.venv ] || $PY -m venv backend/.venv
+BIN=backend/.venv/bin; [ -d "$BIN" ] || BIN=backend/.venv/Scripts   # Windows (Git Bash)
+"$BIN/pip" install -q -r backend/requirements.txt
 [ -f backend/.env ] || cp backend/.env.example backend/.env
 [ -d frontend/node_modules ] || (cd frontend && npm install)
 
 export DJANGO_DEBUG=1
-(cd backend && .venv/bin/python manage.py migrate --noinput && .venv/bin/python manage.py importar_banco_legado)
-(cd backend && .venv/bin/python manage.py runserver 0.0.0.0:8000) &
+(cd backend && "../$BIN/python" manage.py migrate --noinput)
+(cd backend && "../$BIN/python" manage.py runserver 0.0.0.0:8000) &
 BACK=$!
 trap 'kill $BACK 2>/dev/null' EXIT
 
