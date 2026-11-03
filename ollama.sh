@@ -19,6 +19,23 @@ ollama_acessivel() {
   [ -n "$pid" ] && grep -qz "OLLAMA_HOST=0.0.0.0" "/proc/$pid/environ" 2>/dev/null
 }
 
+# Instalação oficial (curl ... | sh) roda o Ollama como serviço do systemd: matar o processo não
+# adianta (o systemd o recria em 127.0.0.1). Nesse caso a configuração vai no próprio serviço.
+if command -v systemctl >/dev/null && systemctl cat ollama.service >/dev/null 2>&1; then
+  if systemctl show ollama --property=Environment | grep -q "OLLAMA_HOST=0.0.0.0"; then
+    echo "Ollama (serviço do systemd) já está acessível pelo Docker (porta $PORTA)."
+    exit 0
+  fi
+  echo "Configurando o serviço do Ollama para aceitar conexões do Docker (pede sudo)..."
+  sudo mkdir -p /etc/systemd/system/ollama.service.d
+  printf '[Service]\nEnvironment="OLLAMA_HOST=0.0.0.0:%s"\n' "$PORTA" | sudo tee /etc/systemd/system/ollama.service.d/educagente.conf >/dev/null
+  sudo systemctl daemon-reload
+  sudo systemctl restart ollama
+  sleep 2
+  echo "Ollama pronto em 0.0.0.0:$PORTA (serviço do systemd)."
+  exit 0
+fi
+
 pid="$(pid_ollama || true)"
 
 if [ -n "$pid" ] && ollama_acessivel "$pid"; then
