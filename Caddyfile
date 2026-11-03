@@ -13,3 +13,9 @@
 	}
 	reverse_proxy api:8000
 }
+
+# www.<domínio> só redireciona para o endereço principal. Precisa de um registro DNS para
+# o www apontando para este servidor; sem ele, o Caddy só avisa no log e o resto funciona.
+www.{$DOMINIO} {
+	redir https://{$DOMINIO}{uri} permanent
+}
