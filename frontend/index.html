@@ -4,12 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Caveat:wght@600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Baloo+2:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <title>Educagente</title>
+    <meta name="description" content="Oficina de uso consciente de IA: compare respostas sem contexto e com fontes, e aprenda a conferir." />
+    <title>Educagente · Oficina de IA com fontes</title>
+    <script>
+      // Aplica tamanho e tema salvos antes de desenhar a página (evita piscar).
+      try {
+        var p = JSON.parse(localStorage.getItem('educagente:preferencias') || '{}')
+        if (p.tamanho) document.documentElement.dataset.tamanho = p.tamanho
+        if (p.tema) document.documentElement.dataset.tema = p.tema
+      } catch (e) {}
+    </script>
   </head>
   <body>
+    <noscript>Esta oficina precisa de JavaScript ligado no navegador.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
