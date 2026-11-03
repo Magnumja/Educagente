@@ -91,12 +91,12 @@ passo "3. Oficina temporária com fonte sugerida (testa os embeddings)"
 OFICINA=$(chamar -X POST "$API/facilitador/oficinas" -H "$AUTH" -H 'Content-Type: application/json' -d '{
   "titulo": "Teste de fuma\u00e7a (apagar)",
   "perguntas": [
-    {"texto": "Napole\u00e3o Bonaparte chegou a visitar o Brasil?", "referencia": ""},
-    {"texto": "Por que a fam\u00edlia real portuguesa veio para o Brasil em 1808?", "referencia": ""},
-    {"texto": "Napole\u00e3o Bonaparte era muito baixo para a \u00e9poca dele?", "referencia": ""}
+    {"texto": "Pelo Marco Civil da Internet, por quanto tempo a operadora de internet precisa guardar os registros de conex\u00e3o do cliente?", "referencia": ""},
+    {"texto": "Pela LGPD, se eu pedir a uma empresa a lista completa dos meus dados pessoais, quantos dias ela tem para responder?", "referencia": ""},
+    {"texto": "Qual \u00e9 o valor m\u00e1ximo da multa que a LGPD permite aplicar a uma empresa por infra\u00e7\u00e3o?", "referencia": ""}
   ]}' | campo "d['id']")
 CODIGO=$(chamar -H "$AUTH" "$API/facilitador/oficinas/$OFICINA" | campo "d['codigo']")
-chamar -X POST -H "$AUTH" -F "arquivo=@backend/oficinas/exemplos/napoleao.txt" "$API/facilitador/oficinas/$OFICINA/fontes" \
+chamar -X POST -H "$AUTH" -F "arquivo=@backend/oficinas/exemplos/direitos-digitais.txt" "$API/facilitador/oficinas/$OFICINA/fontes" \
   | campo "'  fonte com ' + str(d['trechos']) + ' trechos'"
 ok "oficina $CODIGO criada"
 
@@ -120,7 +120,7 @@ chamar -X POST "$API/eu/perguntar" -H "$PART" -H 'Content-Type: application/json
   | campo "'  (' + str(round(d['tempo_segundos'])) + ' s) ' + d['texto'][:200].replace(chr(10), ' ')"
 
 passo "6. Pergunta com fontes (testa a busca)"
-echo "  mesma pergunta, agora com a fonte sobre Napoleão; aguardando a IA..."
+echo "  mesma pergunta, agora com a fonte sobre LGPD e Marco Civil; aguardando a IA..."
 chamar -X POST -H "$PART" "$API/eu/fontes-sugeridas/$FONTE" > /dev/null
 chamar -X POST "$API/eu/perguntar" -H "$PART" -H 'Content-Type: application/json' -d "{\"pergunta_id\": $PERGUNTA, \"tentativa\": 2}" \
   | campo "'  (' + str(round(d['tempo_segundos'])) + ' s, ' + str(len(d['trechos'])) + ' trechos, nada relevante: ' + str(d['nada_relevante']) + ') ' + d['texto'][:200].replace(chr(10), ' ')"

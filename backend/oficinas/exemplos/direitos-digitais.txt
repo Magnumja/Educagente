@@ -1,0 +1,15 @@
+Seus direitos na internet: trechos conferidos da LGPD e do Marco Civil da Internet
+
+Este texto reúne trechos de duas leis brasileiras: o Marco Civil da Internet (Lei nº 12.965, de 2014) e a Lei Geral de Proteção de Dados Pessoais, a LGPD (Lei nº 13.709, de 2018). O texto oficial das duas está no site planalto.gov.br.
+
+Registro de conexão é o conjunto de informações sobre a data e a hora de início e de término de uma conexão à internet, a sua duração e o endereço IP usado (Marco Civil da Internet, art. 5º, VI).
+
+A operadora de internet guarda os registros de conexão por 1 ano. Marco Civil da Internet, art. 13: "Na provisão de conexão à internet, cabe ao administrador de sistema autônomo respectivo o dever de manter os registros de conexão, sob sigilo, em ambiente controlado e de segurança, pelo prazo de 1 (um) ano, nos termos do regulamento."
+
+Aplicativos e sites guardam os registros de acesso por 6 meses, um prazo diferente do prazo da operadora. Marco Civil da Internet, art. 15: "O provedor de aplicações de internet constituído na forma de pessoa jurídica e que exerça essa atividade de forma organizada, profissionalmente e com fins econômicos deverá manter os respectivos registros de acesso a aplicações de internet, sob sigilo, em ambiente controlado e de segurança, pelo prazo de 6 (seis) meses, nos termos do regulamento."
+
+Prazo para a empresa mostrar os seus dados pessoais. LGPD, art. 19: "A confirmação de existência ou o acesso a dados pessoais serão providenciados, mediante requisição do titular: I - em formato simplificado, imediatamente; ou II - por meio de declaração clara e completa, que indique a origem dos dados, a inexistência de registro, os critérios utilizados e a finalidade do tratamento, observados os segredos comercial e industrial, fornecida no prazo de até 15 (quinze) dias, contado da data do requerimento do titular."
+
+O prazo da resposta completa é de até 15 dias, contados da data do pedido. O texto da lei não fala em dias úteis.
+
+Multa máxima da LGPD. As empresas que descumprem a lei ficam sujeitas a sanções aplicadas pela Autoridade Nacional de Proteção de Dados (ANPD). Uma delas, a do art. 52, II, é a "multa simples, de até 2% (dois por cento) do faturamento da pessoa jurídica de direito privado, grupo ou conglomerado no Brasil no seu último exercício, excluídos os tributos, limitada, no total, a R$ 50.000.000,00 (cinquenta milhões de reais) por infração".
