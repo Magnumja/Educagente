@@ -1,6 +1,7 @@
 /**
  * Página inicial (#/). Quem ainda não entrou digita o código da oficina; quem já tem token
- * salvo vê "Continuar de onde parei". Também resume a oficina e tem a ilustração animada.
+ * salvo vê "Continuar de onde parei" ou "Entrar em outra oficina". Também resume a oficina e
+ * tem a ilustração animada.
  */
 import { useState, type FormEvent } from 'react'
 import { ArrowRight, BookMarked, Bot, FileText, GraduationCap, MessageSquareDashed, Scale, User } from 'lucide-react'
@@ -19,7 +20,10 @@ const PASSOS = [
 ]
 
 export function Inicio() {
-  const temSessao = !!sessao.participante()
+  // "Entrar em outra oficina" troca o aviso pelo formulário. O token antigo só é substituído
+  // quando a entrada na nova oficina dá certo (#/entrar/CODIGO).
+  const [outraOficina, setOutraOficina] = useState(false)
+  const temSessao = !!sessao.participante() && !outraOficina
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState('')
 
@@ -54,12 +58,25 @@ export function Inicio() {
               <div className="space-y-4">
                 <h2 className="text-lg font-bold">Você já está numa oficina</h2>
                 <p className="text-tinta-2">Seu progresso ficou salvo neste navegador.</p>
-                <a href={href('/oficina')} className={botaoCls('primario')}>
-                  Continuar de onde parei <ArrowRight className="size-4" aria-hidden />
-                </a>
+                <div className="flex flex-wrap items-center gap-3">
+                  <a href={href('/oficina')} className={botaoCls('primario')}>
+                    Continuar de onde parei <ArrowRight className="size-4" aria-hidden />
+                  </a>
+                  <Botao variante="discreto" onClick={() => setOutraOficina(true)}>
+                    Entrar em outra oficina
+                  </Botao>
+                </div>
               </div>
             ) : (
               <form onSubmit={entrar} className="space-y-4" noValidate>
+                {outraOficina && (
+                  <p className="text-sm text-tinta-2">
+                    Ao entrar na nova oficina, a anterior deixa de abrir neste navegador.{' '}
+                    <button type="button" className="font-semibold text-acao underline" onClick={() => setOutraOficina(false)}>
+                      Voltar
+                    </button>
+                  </p>
+                )}
                 <Campo rotulo="Código da oficina" dica="Está na tela projetada pelo facilitador." erro={erro || undefined}>
                   {(props) => (
                     <input
