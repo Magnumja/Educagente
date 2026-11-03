@@ -1,9 +1,23 @@
 # Educagente
 
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![Ollama](https://img.shields.io/badge/IA-Ollama%20%7C%20Anthropic-000000)
+![Docker](https://img.shields.io/badge/Docker-pronto-2496ED?logo=docker&logoColor=white)
+![Testes](https://img.shields.io/badge/testes-40%20passando-2EA44F)
+
 Plataforma da oficina **"Inclusão digital crítica: uso consciente de IA com RAG e NotebookLM"**
 (Projeto DAC). Mostra, na prática, que uma IA pode responder com segurança e estar errada, e
 que fontes confiáveis e verificação mudam o resultado. Público: adolescentes e adultos, sem
 conhecimento técnico, em oficinas de 30 a 60 minutos.
+
+![Tela inicial da plataforma](docs/imagens/01-inicio.png)
+
+**Sumário:** [O que a pessoa faz](#o-que-a-pessoa-faz) · [Telas](#telas) ·
+[Privacidade e segurança](#privacidade-e-segurança) · [Arquitetura](#arquitetura) ·
+[Como subir](#como-subir) · [Guia do código](docs/GUIA-DO-CODIGO.md)
 
 ## O que a pessoa faz
 
@@ -40,6 +54,22 @@ Entra com a senha definida no servidor e:
 
 `python manage.py criar_oficina_exemplo` cria uma oficina pronta sobre Napoleão Bonaparte
 (três perguntas, referências e uma fonte com os fatos conferidos) para ensaiar.
+
+## Telas
+
+As capturas abaixo são do modo demonstração (sem IA real ligada); com Ollama ou Anthropic, as
+respostas são escritas pelo modelo.
+
+| | |
+|---|---|
+| ![Etapa 1: perguntas sem contexto](docs/imagens/02-etapa1-sem-contexto.png) | ![Etapa 2: fontes confiáveis](docs/imagens/03-etapa2-fontes.png) |
+| **Etapa 1:** as três perguntas sem contexto, com a barra de progresso fixa à esquerda | **Etapa 2:** fontes sugeridas, envio de PDF/TXT ou texto colado, e a orientação para a IA |
+| ![Etapa 3: resposta com citações](docs/imagens/04-etapa3-com-fontes.png) | ![Etapa 4: comparação paginada](docs/imagens/05-etapa4-comparar.png) |
+| **Etapa 3:** a resposta cita documento e página; o trecho aparece com marca-texto | **Etapa 4:** uma pergunta por vez, em três passos: ler, avaliar e conferir a referência |
+| ![Como a IA usa fontes](docs/imagens/06-como-funciona.png) | ![Área do facilitador](docs/imagens/07-facilitador.png) |
+| **Como a IA usa fontes:** contexto × RAG e uma simulação da busca | **Facilitador:** código para o projetor, respostas da turma e CSV |
+| ![Ajustes de leitura](docs/imagens/08-ajustes-de-leitura.png) | <img src="docs/imagens/09-celular.png" alt="Versão para celular" width="260"> |
+| **Ajustes de leitura:** texto maior, fundo escuro e detalhes técnicos | **Celular:** a mesma oficina em tela pequena |
 
 ## Privacidade e segurança
 
