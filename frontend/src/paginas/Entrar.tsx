@@ -88,10 +88,11 @@ export function Entrar({ codigo }: { codigo: string }) {
             </Campo>
 
             <fieldset className="space-y-3 rounded-caixa border bg-superficie-2 p-4">
-              <legend className="flex items-center gap-2 px-1 font-semibold">
+              {/* float: tira o título de cima da borda (padrão do legend) e o traz para dentro da caixa. */}
+              <legend className="float-left flex w-full items-center gap-2 font-semibold">
                 <ShieldCheck className="size-5 text-acao" aria-hidden /> Seus dados
               </legend>
-              <ul className="list-disc space-y-1.5 pl-5 text-[0.95rem] text-tinta-2">
+              <ul className="clear-both list-disc space-y-1.5 pl-5 text-[0.95rem] text-tinta-2">
                 <li>Guardamos só o apelido, as respostas da IA, as fontes que você adicionar e a sua avaliação.</li>
                 <li>Isso é usado pela equipe do projeto para estudar como as pessoas avaliam a IA, sem identificar ninguém.</li>
                 <li>Não envie documentos com dados pessoais (nome completo, CPF, endereço, fotos).</li>

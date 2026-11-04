@@ -49,7 +49,7 @@ export default function App() {
       <main
         id="conteudo"
         tabIndex={-1}
-        className={cn(larguraCls, 'flex-1 focus:outline-none', pagina === 'oficina' ? 'py-5 sm:py-6' : 'py-8 sm:py-12')}
+        className={cn(larguraCls, 'flex-1 focus:outline-none', pagina === 'oficina' || !pagina ? 'py-5 sm:py-6' : 'py-8 sm:py-12')}
       >
         {/* Mudar de página troca o key e a animação .entrar-pagina roda. Dentro da oficina, quem anima é a etapa. */}
         <div key={pagina === 'oficina' ? 'oficina' : partes.join('/')} className="entrar-pagina">
@@ -68,7 +68,7 @@ function Pagina({ pagina, resto }: { pagina?: string; resto: string[] }) {
     case 'entrar':
       return resto[0] ? <Entrar key={resto[0]} codigo={resto[0].toUpperCase()} /> : <Inicio />
     case 'oficina':
-      return <Oficina etapa={resto[0] ? Number(resto[0]) : null} />
+      return <Oficina etapa={resto[0] ? Number(resto[0]) : null} concluida={resto[0] === 'concluida'} />
     case 'como-funciona':
       return <ComoFunciona />
     case 'facilitador':

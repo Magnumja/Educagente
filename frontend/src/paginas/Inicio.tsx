@@ -42,9 +42,6 @@ export function Inicio() {
     <div className="space-y-20">
       <section className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-6">
-          <p className="inline-flex items-center gap-2 rounded-full border bg-superficie px-3 py-1 text-sm font-medium text-tinta-2 shadow-caixa">
-            <span className="size-2 rounded-full bg-ok" aria-hidden /> Oficina de 30 a 60 minutos · sem programar
-          </p>
           <h1 className="max-w-[16ch] text-[2.3rem] font-bold leading-[1.1] tracking-tight sm:text-[3.4rem]">
             A IA responde com segurança. <span className="text-acao">Isso não quer dizer que ela acertou.</span>
           </h1>

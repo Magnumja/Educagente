@@ -6,11 +6,12 @@
 import { useState } from 'react'
 import { AlertTriangle, ArrowLeft, ArrowRight, BookMarked, ClipboardCheck, MessageSquareDashed, Scale } from 'lucide-react'
 import type { PropsEtapa } from '@/components/Etapa'
+import { Passos } from '@/components/Passos'
 import { RespostaIA } from '@/components/RespostaIA'
 import { Aviso, Botao, Caixa, Dica } from '@/components/ui'
 import type { Pergunta } from '@/lib/api'
 import { respostaDe } from '@/lib/etapas'
-import { atraso, cn } from '@/lib/utils'
+import { atraso } from '@/lib/utils'
 import { FormularioDeAvaliacao } from './FormularioDeAvaliacao'
 import { ResumoDaAvaliacao } from './ResumoDaAvaliacao'
 
@@ -54,34 +55,14 @@ export function PaginasDaPergunta({ pergunta, estado, recarregar, avaliada, prox
         </h2>
       </div>
 
-      <ol className="flex flex-wrap gap-2" aria-label="Passos desta pergunta">
-        {PASSOS.map((titulo, i) => (
-          <li key={titulo}>
-            <button
-              type="button"
-              onClick={() => ir(i)}
-              disabled={!liberadas[i]}
-              aria-current={pagina === i ? 'step' : undefined}
-              className={cn(
-                'inline-flex min-h-10 items-center gap-2 rounded-full border-[1.5px] py-1 pl-1 pr-4 text-sm font-semibold transition-[background-color,border-color] duration-200',
-                'disabled:cursor-not-allowed disabled:opacity-50',
-                pagina === i ? 'border-acao bg-acao-suave' : 'border-linha bg-superficie hover:border-linha-forte',
-              )}
-            >
-              <span
-                aria-hidden
-                className={cn(
-                  'grid size-7 place-items-center rounded-full font-mono text-xs font-bold transition-colors duration-300',
-                  pagina === i ? 'bg-acao text-acao-tinta' : i < pagina || (i === 1 && avaliada) ? 'bg-ok text-superficie' : 'bg-superficie-2 text-tinta-2',
-                )}
-              >
-                {i + 1}
-              </span>
-              {titulo}
-            </button>
-          </li>
-        ))}
-      </ol>
+      <Passos
+        titulos={PASSOS}
+        atual={pagina}
+        aoEscolher={ir}
+        rotulo="Passos desta pergunta"
+        feito={(i) => i < pagina || (i === 1 && avaliada)}
+        liberado={(i) => liberadas[i]}
+      />
 
       {/* key={pagina}: cada passo entra com a animação .entrar-pagina. */}
       <div key={pagina} className="entrar-pagina">

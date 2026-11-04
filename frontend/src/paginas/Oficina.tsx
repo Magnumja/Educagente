@@ -3,15 +3,17 @@
  * esquerda e a etapa N à direita. É a dona do estado: as etapas recebem estado + recarregar
  * e, depois de cada ação (perguntar, adicionar fonte, avaliar), chamam recarregar() para
  * buscar o estado novo. Sem número na rota, abre na primeira etapa ainda não feita.
+ * Em #/oficina/concluida, mostra o parabéns se as etapas 1 a 4 já estiverem feitas.
  */
 import { useCallback, useEffect, useState } from 'react'
 import { botaoCls } from '@/components/classes'
 import { Trilha } from '@/components/Trilha'
 import { Aviso, Carregando } from '@/components/ui'
 import { api, ErroApi, sessao, textoDoErro, type Estado } from '@/lib/api'
-import { ETAPAS, etapaAtual } from '@/lib/etapas'
+import { ETAPAS, ETAPAS_COM_PROGRESSO, etapaAtual, progresso } from '@/lib/etapas'
 import { href } from '@/lib/rota'
 import { Comparar } from './oficina/Comparar'
+import { Concluida } from './oficina/Concluida'
 import { Fontes } from './oficina/Fontes'
 import { NotebookLM } from './oficina/NotebookLM'
 import { Perguntas } from './oficina/Perguntas'
@@ -19,7 +21,7 @@ import { Perguntas } from './oficina/Perguntas'
 /** Sem token salvo nem adianta chamar a API: já começa como "sessão inexistente" (401). */
 const erroInicial = () => (sessao.participante() ? null : new ErroApi(401, ''))
 
-export function Oficina({ etapa }: { etapa: number | null }) {
+export function Oficina({ etapa, concluida }: { etapa: number | null; concluida?: boolean }) {
   const [estado, setEstado] = useState<Estado | null>(null)
   const [erro, setErro] = useState<ErroApi | null>(erroInicial)
 
@@ -67,11 +69,14 @@ export function Oficina({ etapa }: { etapa: number | null }) {
     )
   if (!estado) return <Carregando />
 
+  const feito = progresso(estado)
+  if (concluida && ETAPAS_COM_PROGRESSO.every((e) => feito[e])) return <Concluida estado={estado} />
+
   const n = etapa && etapa >= 1 && etapa <= ETAPAS.length ? etapa : etapaAtual(estado)
   const props = { estado, recarregar }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-10">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-10">
       <Trilha estado={estado} atual={n} />
       {/* key={n}: trocar de etapa remonta o bloco, e a animação .entrar-pagina roda de novo. */}
       <div key={n} className="entrar-pagina min-w-0">

@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { Check } from 'lucide-react'
 import { entradaCls } from '@/components/classes'
-import { Botao, Caixa, Campo, NumeroDoPasso } from '@/components/ui'
+import { Botao, Caixa, Campo } from '@/components/ui'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -44,14 +44,11 @@ export function Orientacao({ inicial, recarregar }: { inicial: string; recarrega
 
   return (
     <Caixa className="space-y-5">
-      <div className="flex items-start gap-4">
-        <NumeroDoPasso n={2} />
-        <div>
-          <h2 className="text-xl font-semibold">
-            Diga como quer a resposta <span className="text-base font-normal text-tinta-2">(opcional)</span>
-          </h2>
-          <p className="text-tinta-2">Essa orientação vai junto com os trechos na etapa 3.</p>
-        </div>
+      <div>
+        <h2 className="text-xl font-semibold">
+          Diga como quer a resposta <span className="text-base font-normal text-tinta-2">(opcional)</span>
+        </h2>
+        <p className="text-tinta-2">Essa orientação vai junto com os trechos na etapa 3.</p>
       </div>
       <div className="flex flex-wrap gap-2" aria-label="Sugestões de orientação">
         {SUGESTOES_DE_ORIENTACAO.map((s) => (
