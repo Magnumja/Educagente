@@ -51,6 +51,19 @@ class TrechoOut(Schema):
     texto: str
 
 
+class TrechoNaBuscaOut(TrechoOut):
+    ordem: int  # posição do trecho na base do participante (0 = primeiro)
+    situacao: Literal["usado", "fora_do_limite", "abaixo_do_minimo"]
+
+
+class BuscaOut(Schema):
+    total: int  # trechos na base; a lista traz só os mais parecidos, até o limite da rota
+    top_k: int
+    limiar: float
+    mudou_desde_a_resposta: bool  # a base mudou e a busca de agora não bate com a resposta salva
+    trechos: list[TrechoNaBuscaOut]
+
+
 class RespostaOut(Schema):
     id: int
     pergunta_id: int

@@ -31,7 +31,7 @@ from django.utils import timezone
 
 from educagente.erros import EntradaInvalida, NaoEncontrado, ServicoIndisponivel
 from oficinas.models import Avaliacao, Documento, Oficina, Participante, Pergunta, Resposta, Trecho
-from rag.busca import mais_parecidos
+from rag.busca import mais_parecidos, similaridades
 from rag.chunking import dividir_em_trechos
 from rag.embeddings import gerar_embeddings
 from rag.ingestion import FORMATOS_ACEITOS, ArquivoIlegivel, PaginaExtraida, extrair_paginas
@@ -45,6 +45,7 @@ MAX_DOCUMENTOS = 6
 MAX_BYTES_ARQUIVO = 5 * 1024 * 1024
 MAX_CARACTERES_DOCUMENTO = 200_000
 MAX_TRECHOS_NA_BASE = 600
+LIMITE_DA_BUSCA = 40  # trechos devolvidos ao esquema da etapa 3: uma base grande não pesa na tela
 TENTATIVAS_DE_CODIGO = 5
 VALIDADE_TOKEN_FACILITADOR = 12 * 60 * 60  # 12 horas, em segundos: cobre um dia de oficina
 SAL_FACILITADOR = "educagente.facilitador"
@@ -407,6 +408,47 @@ def _buscar_trechos(participante: Participante, pergunta: str) -> list[TrechoUsa
         TrechoUsado(documento=trechos[i].documento.nome, pagina=trechos[i].pagina, similaridade=s, texto=trechos[i].texto)
         for i, s in achados
     ]
+
+
+def busca_da_pergunta(participante: Participante, pergunta_id: int) -> dict:
+    """Mostra a busca por dentro: a nota de cada trecho e por que entrou ou ficou de fora.
+
+    Só lê: não chama o modelo de chat nem grava nada. Usa as mesmas funções da resposta de
+    verdade, então os trechos marcados como "usado" são os que `perguntar` escolheria agora.
+    """
+    pergunta = _pergunta_da_oficina(participante, pergunta_id)
+    resultado = {"total": 0, "top_k": settings.TOP_K, "limiar": settings.SIMILARITY_THRESHOLD, "mudou_desde_a_resposta": False, "trechos": []}
+    trechos = list(Trecho.objects.filter(documento__participante=participante).select_related("documento"))
+    salva = participante.respostas.filter(pergunta=pergunta, tentativa=Resposta.COM_FONTES).first()
+    if not trechos:
+        resultado["mudou_desde_a_resposta"] = bool(salva and salva.trechos)
+        return resultado
+
+    matriz = np.stack([t.vetor_np() for t in trechos])
+    [consulta] = _gerar_embeddings([pergunta.texto])
+    notas = similaridades(consulta, matriz)
+    usados = {i for i, _ in mais_parecidos(consulta, matriz, top_k=settings.TOP_K, limiar=settings.SIMILARITY_THRESHOLD)}
+
+    def situacao(i: int) -> str:
+        if i in usados:
+            return "usado"
+        return "fora_do_limite" if notas[i] >= settings.SIMILARITY_THRESHOLD else "abaixo_do_minimo"
+
+    resultado["total"] = len(trechos)
+    resultado["trechos"] = [
+        {
+            "ordem": int(i),
+            "documento": trechos[i].documento.nome,
+            "pagina": trechos[i].pagina,
+            "texto": trechos[i].texto,
+            "similaridade": round(float(notas[i]), 3),
+            "situacao": situacao(int(i)),
+        }
+        for i in np.argsort(-notas)[:LIMITE_DA_BUSCA]
+    ]
+    if salva:
+        resultado["mudou_desde_a_resposta"] = {t["texto"] for t in salva.trechos} != {trechos[i].texto for i in usados}
+    return resultado
 
 
 def _consultar_modelo(sistema: str, pergunta: str) -> str:

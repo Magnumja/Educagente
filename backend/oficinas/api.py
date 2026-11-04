@@ -22,6 +22,7 @@ from oficinas.schemas import (
     AtualizarOficinaIn,
     AvaliacaoIn,
     AvaliacaoOut,
+    BuscaOut,
     DocumentoOut,
     EntrarIn,
     EntrarOut,
@@ -106,6 +107,12 @@ def sair_e_apagar(request):
 @participante.post("/eu/perguntar", response=RespostaOut, throttle=[AuthRateThrottle("15/m")])
 def perguntar(request, dados: PerguntarIn):
     return services.perguntar(request.auth, dados.pergunta_id, dados.tentativa)
+
+
+@participante.get("/eu/perguntas/{pergunta_id}/busca", response=BuscaOut, throttle=[AuthRateThrottle("30/m")])
+def ver_busca(request, pergunta_id: int):
+    """Para o esquema da etapa 3: como cada trecho da base se saiu nesta pergunta."""
+    return services.busca_da_pergunta(request.auth, pergunta_id)
 
 
 @participante.post("/eu/documentos", response=DocumentoOut, throttle=[AuthRateThrottle("10/m")])

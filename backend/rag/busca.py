@@ -13,12 +13,17 @@ from __future__ import annotations
 import numpy as np
 
 
-def mais_parecidos(consulta: np.ndarray, matriz: np.ndarray, top_k: int, limiar: float) -> list[tuple[int, float]]:
-    if matriz.size == 0:
-        return []
+def similaridades(consulta: np.ndarray, matriz: np.ndarray) -> np.ndarray:
+    """Similaridade de cosseno da pergunta com cada trecho da matriz, na ordem da matriz."""
     normas = np.linalg.norm(matriz, axis=1) * np.linalg.norm(consulta)
     # Vetor zerado (texto sem nenhuma palavra reconhecida) daria divisão por zero: vira similaridade 0.
     with np.errstate(divide="ignore", invalid="ignore"):
-        similaridades = np.where(normas > 0, matriz @ consulta / normas, 0.0)
-    ordem = np.argsort(-similaridades)[:top_k]
-    return [(int(i), round(float(similaridades[i]), 3)) for i in ordem if similaridades[i] >= limiar]
+        return np.where(normas > 0, matriz @ consulta / normas, 0.0)
+
+
+def mais_parecidos(consulta: np.ndarray, matriz: np.ndarray, top_k: int, limiar: float) -> list[tuple[int, float]]:
+    if matriz.size == 0:
+        return []
+    notas = similaridades(consulta, matriz)
+    ordem = np.argsort(-notas)[:top_k]
+    return [(int(i), round(float(notas[i]), 3)) for i in ordem if notas[i] >= limiar]
