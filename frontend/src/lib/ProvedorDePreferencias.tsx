@@ -1,7 +1,7 @@
 /**
  * Guarda as preferências de leitura e as aplica na página inteira. Envolve o App em main.tsx.
  * Tamanho e tema viram atributos no <html> (data-tamanho, data-tema), que o index.css usa
- * para trocar o tamanho da fonte e as cores. O nível de detalhe é lido pelos componentes.
+ * para trocar o tamanho da fonte e as cores.
  */
 import { useEffect, useState, type ReactNode } from 'react'
 import { CHAVE_PREFERENCIAS, ContextoDePreferencias, carregarPreferencias, type Preferencias } from './preferencias'

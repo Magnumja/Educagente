@@ -203,8 +203,7 @@ uma mensagem pronta e o participante vê um aviso, não um erro técnico.
 2. `ORIENTAÇÃO DO ESTUDANTE:` o que o participante escreveu na etapa 2 (opcional).
 3. `TRECHOS DAS FONTES:` cada trecho numerado, com documento e página.
 
-No modo "Com detalhes técnicos", o participante vê exatamente esse texto em
-"Ver as instruções exatas enviadas à IA". Nada fica escondido.
+A API devolve esse texto no campo `instrucoes_enviadas` de cada resposta.
 
 ---
 
@@ -259,6 +258,7 @@ frontend espelha os mesmos tipos em `frontend/src/lib/api.ts`.
 | Participante | `POST /eu/textos` | titulo, texto | documento criado |
 | Participante | `POST /eu/fontes-sugeridas/{id}` | | cópia da fonte na base |
 | Participante | `DELETE /eu/documentos/{id}` | | 204 |
+| Participante | `GET /eu/perguntas/{id}/busca` | - | nota e situação de cada trecho nessa pergunta (esquema da etapa 3); só lê |
 | Participante | `PUT /eu/orientacao` | orientacao | 204 |
 | Participante | `PUT /eu/avaliacoes/{pergunta_id}` | primeira, segunda, mais_confiavel, conferiu_fonte, observacao | avaliação salva |
 | Participante | `DELETE /eu` | | 204: apaga **todos** os dados do participante |
@@ -313,7 +313,6 @@ servidor é a única fonte da verdade**; o navegador só mostra.
 
 - **Tamanho do texto:** muda o tamanho base no `<html>`; tudo cresce junto.
 - **Tema:** claro (padrão, pensado para projetor) ou escuro; as cores são variáveis em `index.css`.
-- **Explicações:** "O essencial" ou "Com detalhes técnicos" (similaridade, instruções enviadas, termos como embedding).
 
 ### Animações
 

@@ -61,8 +61,7 @@ não tem fonte confirmada e não deve aparecer na interface. Nenhum depoimento o
 ## Product Principles
 
 1. Sempre mostrar a fonte; nunca apresentar a IA como mágica.
-2. Uma etapa por vez, linguagem direta em português, segunda pessoa, sem jargão (o técnico fica
-   atrás de "com detalhes técnicos").
+2. Uma etapa por vez, linguagem direta em português, segunda pessoa, sem jargão.
 3. Demora e "nada encontrado" são informação do produto, não falhas a esconder.
 4. Ter fonte não garante acerto: a interface sempre pede conferência.
 5. Fidelidade à proposta acima de recursos extras.

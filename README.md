@@ -27,7 +27,7 @@ conhecimento técnico, em oficinas de 30 a 60 minutos.
 | 2 · Fontes | Adiciona fontes confiáveis (sugeridas pelo facilitador, PDF/TXT próprio ou texto colado) e, se quiser, orienta a IA | O papel do contexto, das instruções e da qualidade das fontes |
 | 3 · Com fontes | Repete as **mesmas três perguntas**; cada resposta cita documento e página | Como o RAG recupera trechos; "não encontrei nas fontes" é uma resposta válida |
 | 4 · Comparar | Vê as duas respostas lado a lado, avalia cada uma e diz em qual confiaria; depois vê a resposta de referência do facilitador | Conferir respostas e fontes; os limites da IA |
-| 5 · NotebookLM | Passo a passo para estudar com documentos no NotebookLM (exemplo: função exponencial) | Levar o mesmo raciocínio para o estudo do dia a dia |
+| 5 · NotebookLM | Refazer o ciclo no NotebookLM, um passo por vez, com as fontes e as perguntas da oficina | Levar o mesmo raciocínio para o estudo do dia a dia |
 
 A página **"Como a IA usa fontes"** explica, em linguagem acessível, a diferença entre dar
 contexto e RAG, o caminho de uma pergunta (trechos → embeddings → busca → resposta citando) e
@@ -35,10 +35,8 @@ tem uma simulação interativa da busca.
 
 ### Para adolescentes e adultos
 
-Em **Ajustes de leitura** cada pessoa escolhe o tamanho do texto (normal, grande, muito
-grande), fundo claro ou escuro e o nível das explicações: **o essencial** ou **com detalhes
-técnicos** (similaridade de cada trecho, instruções exatas enviadas à IA, termos como
-embedding e cosseno). A oficina é dividida em cinco etapas curtas, com o estado de cada uma
+Na **engrenagem** do cabeçalho cada pessoa escolhe o modo noturno e o tamanho do texto
+(normal, grande, muito grande). A oficina é dividida em cinco etapas curtas, com o estado de cada uma
 escrito na trilha lateral, e nada depende só de cor.
 
 ### O facilitador
@@ -71,7 +69,7 @@ respostas são escritas pelo modelo.
 | ![Como a IA usa fontes](docs/imagens/06-como-funciona.png) | ![Área do facilitador](docs/imagens/07-facilitador.png) |
 | **Como a IA usa fontes:** contexto × RAG e uma simulação da busca | **Facilitador:** código para o projetor, respostas da turma e CSV |
 | ![Ajustes de leitura](docs/imagens/08-ajustes-de-leitura.png) | <img src="docs/imagens/09-celular.png" alt="Versão para celular" width="260"> |
-| **Ajustes de leitura:** texto maior, fundo escuro e detalhes técnicos | **Celular:** a mesma oficina em tela pequena |
+| **Ajustes de leitura:** texto maior e fundo escuro | **Celular:** a mesma oficina em tela pequena |
 
 ## Privacidade e segurança
 

@@ -1,20 +1,18 @@
 /**
  * Página #/como-funciona: explica, sem jargão, a diferença entre dar contexto e RAG, o caminho
  * de uma pergunta e os limites. Tem uma simulação de busca que roda só no navegador.
- * O texto muda com o ajuste "Explicações" (essencial ou com detalhes técnicos).
  */
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowRight } from 'lucide-react'
 import { entradaCls } from '@/components/classes'
 import { Caixa, Campo } from '@/components/ui'
-import { usePreferencias } from '@/lib/preferencias'
 import { atraso, cn, porcentagem } from '@/lib/utils'
 
 const ETAPAS_RAG = [
-  { titulo: 'Cortar em trechos', essencial: 'O texto das fontes é dividido em pedaços de alguns parágrafos.', tecnico: 'Chunks de até ~500 caracteres, respeitando parágrafos, com pequena sobreposição.' },
-  { titulo: 'Transformar em números', essencial: 'Cada trecho vira uma lista de números que representa o assunto dele.', tecnico: 'Embeddings do modelo bge-m3 (multilíngue), guardados num índice.' },
-  { titulo: 'Buscar os mais parecidos', essencial: 'A pergunta também vira números, e a plataforma acha os trechos mais próximos.', tecnico: 'Similaridade de cosseno; só entram os melhores acima de um limiar mínimo.' },
-  { titulo: 'Responder citando', essencial: 'A IA recebe a pergunta junto com esses trechos e responde indicando de onde veio cada parte.', tecnico: 'Os trechos vão no prompt de sistema, numerados, com documento e página.' },
+  { titulo: 'Cortar em trechos', texto: 'O texto das fontes é dividido em pedaços de alguns parágrafos.' },
+  { titulo: 'Transformar em números', texto: 'Cada trecho vira uma lista de números que representa o assunto dele.' },
+  { titulo: 'Buscar os mais parecidos', texto: 'A pergunta também vira números, e a plataforma acha os trechos mais próximos.' },
+  { titulo: 'Responder citando', texto: 'A IA recebe a pergunta junto com esses trechos e responde indicando de onde veio cada parte.' },
 ]
 
 const FONTE_EXEMPLO = [
@@ -42,9 +40,6 @@ function palavras(texto: string) {
 }
 
 export function ComoFunciona() {
-  const { prefs } = usePreferencias()
-  const tecnico = prefs.detalhe === 'tecnico'
-
   return (
     <div className="space-y-16">
       <header className="max-w-[68ch] space-y-4">
@@ -88,7 +83,7 @@ export function ComoFunciona() {
             <li key={e.titulo} style={atraso(i * 2)} className="surgir levanta rounded-caixa border bg-superficie p-5 shadow-caixa">
               <p className="font-mono text-sm font-bold text-acao">{i + 1}</p>
               <h3 className="mt-1 font-semibold">{e.titulo}</h3>
-              <p className="mt-1 text-[0.95rem] text-tinta-2">{tecnico ? e.tecnico : e.essencial}</p>
+              <p className="mt-1 text-[0.95rem] text-tinta-2">{e.texto}</p>
             </li>,
             i < ETAPAS_RAG.length - 1 && (
               <li key={`seta-${i}`} aria-hidden style={atraso(i * 2 + 1)} className="surgir grid place-items-center text-acao">
@@ -100,7 +95,7 @@ export function ComoFunciona() {
         </ol>
       </section>
 
-      <Experimente tecnico={tecnico} />
+      <Experimente />
 
       <section aria-labelledby="limites" className="max-w-[70ch] space-y-4">
         <h2 id="limites" className="text-2xl font-bold">
@@ -128,13 +123,15 @@ export function ComoFunciona() {
   )
 }
 
+/** Nota mínima para um trecho entrar na simulação. */
+const LIMIAR = 0.2
+
 /**
  * Simulação da busca do RAG feita no próprio navegador: a nota de cada trecho é a fração das
  * palavras da pergunta que aparecem nele. Entram os 2 melhores acima do limiar.
  */
-function Experimente({ tecnico }: { tecnico: boolean }) {
+function Experimente() {
   const [pergunta, setPergunta] = useState('Como as nuvens se formam?')
-  const [limiar, setLimiar] = useState(0.2)
 
   const ranking = useMemo(() => {
     const q = palavras(pergunta)
@@ -145,7 +142,7 @@ function Experimente({ tecnico }: { tecnico: boolean }) {
     })
   }, [pergunta])
   const escolhidos = [...ranking]
-    .filter((r) => r.nota >= limiar && r.nota > 0)
+    .filter((r) => r.nota >= LIMIAR && r.nota > 0)
     .sort((a, b) => b.nota - a.nota)
     .slice(0, 2)
     .map((r) => r.i)
@@ -171,24 +168,6 @@ function Experimente({ tecnico }: { tecnico: boolean }) {
           {(p) => <input {...p} value={pergunta} onChange={(e) => setPergunta(e.target.value)} className={entradaCls} />}
         </Campo>
 
-        {tecnico && (
-          <div className="space-y-1">
-            <label htmlFor="limiar" className="font-semibold">
-              Limiar mínimo: {porcentagem(limiar)}
-            </label>
-            <input
-              id="limiar"
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={limiar}
-              onChange={(e) => setLimiar(Number(e.target.value))}
-              className="block w-full max-w-sm accent-[var(--acao)]"
-            />
-            <p className="text-sm text-tinta-2">Abaixo do limiar o trecho não entra, mesmo sendo o melhor que existe.</p>
-          </div>
-        )}
 
         <ol className="space-y-2" aria-live="polite">
           {ranking.map((r) => {
@@ -210,7 +189,6 @@ function Experimente({ tecnico }: { tecnico: boolean }) {
                     <span className="block h-full bg-acao transition-[width] duration-500" style={{ width: porcentagem(r.nota) }} />
                   </span>
                   {entra ? 'Vai para a IA' : 'Fica de fora'}
-                  {tecnico && <span className="font-normal text-tinta-2">({porcentagem(r.nota)})</span>}
                 </span>
               </li>
             )

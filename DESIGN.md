@@ -16,8 +16,8 @@ do sistema (o laboratório pode estar sem internet) e nenhuma animação que atr
    fonte e nos números de citação. Não é usado para decorar.
 3. **Uma etapa por vez.** A oficina tem cinco etapas; a trilha lateral (no celular, horizontal)
    diz qual está feita, qual é a atual e o que falta, por escrito.
-4. **Mesma oficina, leitores diferentes.** Ajustes de leitura: tamanho do texto, tema e nível
-   das explicações ("o essencial" ou "com detalhes técnicos").
+4. **Mesma oficina, leitores diferentes.** Ajustes de leitura na engrenagem do cabeçalho:
+   tamanho do texto e modo noturno.
 
 ## Tokens (`frontend/src/index.css`)
 

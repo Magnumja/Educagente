@@ -1,14 +1,13 @@
 /**
  * Como uma resposta da IA aparece na tela: selo de procedência (sem fonte / com fontes /
  * nada encontrado), texto com as citações [n] viradas botões, chips "De onde veio", a lista
- * de trechos e, no modo técnico, as instruções exatas enviadas. Também tem o Escrevendo,
+ * de trechos. Também tem o Escrevendo,
  * mostrado enquanto a resposta não chega. Usado nas etapas 1, 3 e 4 e na tela do facilitador.
  */
 import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { BookMarked, Bot, ChevronDown, Clock, FileText, MessageSquareDashed, SearchX } from 'lucide-react'
 import type { Resposta, Trecho } from '@/lib/api'
-import { usePreferencias } from '@/lib/preferencias'
-import { atraso, cn, plural, porcentagem } from '@/lib/utils'
+import { atraso, cn, plural } from '@/lib/utils'
 
 /** Selo de procedência: diz, com texto e ícone (nunca só com cor), de onde veio a resposta. */
 function Procedencia({ resposta }: { resposta: Resposta }) {
@@ -68,7 +67,6 @@ function TextoComCitacoes({ texto, trechos, aoCitar }: { texto: string; trechos:
 
 /** Trechos das fontes que a IA recebeu, numerados como no texto, com o realce marca-texto. */
 function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: string }) {
-  const { prefs } = usePreferencias()
   return (
     <ol className="space-y-2.5">
       {trechos.map((t, i) => (
@@ -83,9 +81,6 @@ function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: stri
             <span className="rounded-md bg-evidencia px-1.5 font-mono">{i + 1}</span>
             <FileText className="size-4 text-tinta-2" aria-hidden />
             {t.documento}, página {t.pagina}
-            {prefs.detalhe === 'tecnico' && (
-              <span className="font-normal text-tinta-2">· similaridade {porcentagem(t.similaridade)}</span>
-            )}
           </p>
           <blockquote className="mt-2 text-[0.95rem] leading-relaxed">
             <span className="marca-texto" style={atraso(i)}>
@@ -103,7 +98,6 @@ function ListaDeTrechos({ trechos, prefixo }: { trechos: Trecho[]; prefixo: stri
  * e na tela do facilitador); trechosAbertos já abre a lista de trechos.
  */
 export function RespostaIA({ resposta, compacta, trechosAbertos }: { resposta: Resposta; compacta?: boolean; trechosAbertos?: boolean }) {
-  const { prefs } = usePreferencias()
   const prefixo = useId().replace(/:/g, '')
   const [aberto, setAberto] = useState(!!trechosAbertos)
   const temTrechos = resposta.trechos.length > 0
@@ -202,16 +196,6 @@ export function RespostaIA({ resposta, compacta, trechosAbertos }: { resposta: R
           </div>
         )}
 
-        {prefs.detalhe === 'tecnico' && resposta.instrucoes_enviadas && !compacta && (
-          <details className="rounded-p border bg-superficie p-3 text-sm">
-            <summary className="flex items-center gap-1.5 font-semibold">
-              <ChevronDown className="seta size-4 -rotate-90" aria-hidden /> Ver as instruções exatas enviadas à IA
-            </summary>
-            <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap font-mono text-[0.8rem] leading-relaxed text-tinta-2">
-              {resposta.instrucoes_enviadas}
-            </pre>
-          </details>
-        )}
       </div>
     </div>
   )
