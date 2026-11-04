@@ -4,18 +4,20 @@
  * do participante (RAG no servidor). Enquanto espera mostra o Escrevendo; depois, a RespostaIA.
  */
 import { useState } from 'react'
-import { BookMarked, Brain, ChevronDown, MousePointerClick, Play, RotateCcw, Sparkles } from 'lucide-react'
+import { BookMarked, Brain, ChevronDown, MousePointerClick, Play, RotateCcw, Sparkles, Workflow } from 'lucide-react'
+import { CaminhoRag } from '@/components/CaminhoRag'
 import { Avancar, CabecalhoEtapa, type PropsEtapa } from '@/components/Etapa'
 import { Escrevendo, RespostaIA } from '@/components/RespostaIA'
 import { Aviso, Botao, Caixa, Dica, NumeroDoPasso } from '@/components/ui'
 import { api, textoDoErro, type Pergunta, type Tentativa } from '@/lib/api'
 import { respostaDe } from '@/lib/etapas'
-import { usePreferencias } from '@/lib/preferencias'
 import { href } from '@/lib/rota'
 import { atraso } from '@/lib/utils'
 
 export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tentativa: Tentativa }) {
-  const { prefs } = usePreferencias()
+  // Só um esquema aberto por vez: a página não fica enorme com três animações.
+  // Sem escolha da pessoa (undefined), abre sozinho na primeira pergunta já respondida com fontes.
+  const [escolhaDeMontagem, setEscolhaDeMontagem] = useState<number | null>()
   // Perguntas esperando resposta da IA agora (pode haver mais de uma) e o erro de cada uma.
   const [pendentes, setPendentes] = useState<Set<number>>(new Set())
   const [erros, setErros] = useState<Record<number, string>>({})
@@ -29,6 +31,7 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
   const respondidas = estado.perguntas.filter((p) => resposta(p, tentativa)).length
   const total = estado.perguntas.length
   const completo = respondidas === total
+  const montagemAberta = escolhaDeMontagem !== undefined ? escolhaDeMontagem : estado.perguntas.find((p) => respostaDe(estado, p.id, 2))?.id
 
   /** POST /eu/perguntar e depois recarregar(): a resposta nova chega pelo estado, não pelo retorno. */
   async function perguntar(p: Pergunta) {
@@ -165,6 +168,21 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
                   </div>
                 </details>
               )}
+
+              {tentativa === 2 && r && !pendente && (
+                <div className="space-y-4 border-t pt-4">
+                  <Botao
+                    variante="secundario"
+                    aria-expanded={montagemAberta === p.id}
+                    onClick={() => setEscolhaDeMontagem(montagemAberta === p.id ? null : p.id)}
+                  >
+                    <Workflow className="size-4" aria-hidden />
+                    {montagemAberta === p.id ? 'Fechar o esquema' : 'Ver como essa resposta foi montada'}
+                  </Botao>
+                  {/* key: perguntar de novo troca a resposta, e o esquema recomeça com os dados novos. */}
+                  {montagemAberta === p.id && <CaminhoRag key={r.criado_em} estado={estado} pergunta={p} resposta={r} />}
+                </div>
+              )}
             </Caixa>
           )
         })}
@@ -174,11 +192,6 @@ export function Perguntas({ estado, recarregar, tentativa }: PropsEtapa & { tent
         <Dica titulo="Antes de seguir, pense" className="mt-8">
           Você confiaria nessas respostas num trabalho da escola? Como faria para conferir?
         </Dica>
-      )}
-      {tentativa === 2 && completo && prefs.detalhe === 'essencial' && (
-        <p className="mt-8 text-center text-sm text-tinta-2">
-          Curioso com os números por trás? Ative “Com detalhes técnicos” em Ajustes de leitura.
-        </p>
       )}
 
       <Avancar

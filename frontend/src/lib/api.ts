@@ -39,6 +39,20 @@ export interface Resposta {
   criado_em: string
 }
 
+export interface TrechoNaBusca extends Trecho {
+  ordem: number
+  situacao: 'usado' | 'fora_do_limite' | 'abaixo_do_minimo'
+}
+
+/** Como cada trecho se saiu numa pergunta (esquema da etapa 3): do mais parecido para o menos. */
+export interface Busca {
+  total: number
+  top_k: number
+  limiar: number
+  mudou_desde_a_resposta: boolean
+  trechos: TrechoNaBusca[]
+}
+
 export interface Documento {
   id: number
   nome: string
@@ -237,6 +251,7 @@ export const api = {
   removerDocumento: (id: number) => chamar<void>(`/eu/documentos/${id}`, { method: 'DELETE', quem: 'participante' }),
   salvarOrientacao: (orientacao: string) =>
     chamar<void>('/eu/orientacao', { method: 'PUT', quem: 'participante', body: json({ orientacao }) }),
+  busca: (pergunta_id: number) => chamar<Busca>(`/eu/perguntas/${pergunta_id}/busca`, { quem: 'participante' }),
   avaliar: (pergunta_id: number, dados: Omit<Avaliacao, 'pergunta_id'>) =>
     chamar<Avaliacao>(`/eu/avaliacoes/${pergunta_id}`, { method: 'PUT', quem: 'participante', body: json(dados) }),
   async apagarMeusDados() {

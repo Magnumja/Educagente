@@ -153,6 +153,42 @@ html[data-tamanho="enorme"] { font-size: 137.5%; }
 }
 .entrar-pagina { animation: entrar-pagina 480ms var(--ease-expo) both; }
 
+/* Esquema do RAG (etapa 3): trechos saindo da fonte, barras dos números, busca e pedido. */
+@keyframes rag-voar {
+  from { opacity: 0; transform: translateX(-48px) scale(0.85) rotate(-3deg); }
+  to { opacity: 1; transform: none; }
+}
+.rag-voar { animation: rag-voar 620ms var(--ease-expo) both; animation-delay: calc(var(--i, 0) * 110ms); }
+
+@keyframes rag-crescer {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.rag-crescer { transform-origin: bottom; animation: rag-crescer 420ms var(--ease-saida) both; }
+
+@keyframes rag-varrer {
+  from { left: -5rem; opacity: 1; }
+  90% { opacity: 1; }
+  to { left: 100%; opacity: 0; }
+}
+.rag-varrer { animation: rag-varrer 1300ms ease-in-out both; }
+
+@keyframes rag-acender {
+  to { background-color: var(--evidencia); border-color: var(--evidencia-tinta); }
+}
+.rag-acender { animation: rag-acender 400ms var(--ease-saida) both; }
+
+@keyframes rag-cair {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: none; }
+}
+.rag-cair { animation: rag-cair 480ms var(--ease-saida) both; }
+
+@keyframes rag-encher {
+  from { width: 0; }
+}
+.rag-encher { animation: rag-encher 700ms var(--ease-expo) both; }
+
 @keyframes pulso {
   0%, 100% { opacity: 0.45; }
   50% { opacity: 1; }
